@@ -44,7 +44,7 @@ export default function AddCosplayPage() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-10">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">ポートフォリオに追加</h1>
           <p className="text-gray-500 mb-8">
-            X(Twitter)の画像付きツイートのURLを貼り付けるだけで、AIがキャラクター名を自動解析して登録の準備をします。
+            X(Twitter)の画像付きツイートのURLを貼り付けるだけで、データベース（5000件）と照合してキャラクター名を自動で特定します。
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -60,7 +60,7 @@ export default function AddCosplayPage() {
               disabled={loading || !url}
               className="bg-black hover:bg-gray-800 disabled:bg-gray-400 text-white font-medium py-3 px-8 rounded-xl transition-colors whitespace-nowrap"
             >
-              {loading ? "AIで解析中..." : "AIで解析する"}
+              {loading ? "データベースと照合中..." : "自動抽出する"}
             </button>
           </div>
 
