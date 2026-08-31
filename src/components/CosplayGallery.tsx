@@ -18,10 +18,20 @@ type Agency = "All" | "Hololive" | "Nijisanji" | "VSPO" | "Favorites";
 export default function CosplayGallery({ data }: { data: CosplayData[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeAgency, setActiveAgency] = useState<Agency>("All");
+  const [sortOrder, setSortOrder] = useState<"Default" | "Debut">("Default");
   
   // Auth & Favorites state
   const [user, setUser] = useState<{ id: string; nickname: string } | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+
+  // デビュー順（辞書内の並び順）を記録したマップ
+  const debutOrderMap = useMemo(() => {
+    const map = new Map<string, number>();
+    dictionary.forEach((item, index) => {
+      map.set(item.name, index);
+    });
+    return map;
+  }, []);
 
   // ログイン状態とFavoritesの同期
   const syncAuth = () => {
@@ -94,9 +104,10 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
     });
   }, [data]);
 
-  // Filter by search and agency
-  const filteredData = useMemo(() => {
-    return enhancedData.filter((item) => {
+  // Filter and Sort data
+  const filteredAndSortedData = useMemo(() => {
+    // 1. フィルター処理
+    let result = enhancedData.filter((item) => {
       // Agency / Favorites filter
       if (activeAgency === "Favorites") {
         if (!favorites.has(item.link)) return false;
@@ -116,7 +127,19 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
       
       return true;
     });
-  }, [enhancedData, searchQuery, activeAgency, favorites]);
+
+    // 2. ソート処理
+    if (sortOrder === "Debut") {
+      result.sort((a, b) => {
+        // 辞書に存在しない場合は一番後ろ（999999）にする
+        const orderA = debutOrderMap.has(a.member) ? debutOrderMap.get(a.member)! : 999999;
+        const orderB = debutOrderMap.has(b.member) ? debutOrderMap.get(b.member)! : 999999;
+        return orderA - orderB;
+      });
+    }
+
+    return result;
+  }, [enhancedData, searchQuery, activeAgency, favorites, sortOrder, debutOrderMap]);
 
   return (
     <div>
@@ -188,12 +211,12 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
       </div>
 
       <p className="text-sm text-gray-500 mb-6 text-center">
-        全 {enhancedData.length} 件中 {filteredData.length} 件を表示
+        全 {enhancedData.length} 件中 {filteredAndSortedData.length} 件を表示
       </p>
 
       {/* ギャラリー */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
-        {filteredData.map((item, index) => {
+        {filteredAndSortedData.map((item, index) => {
           const isFav = favorites.has(item.link);
           return (
           <div key={index} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
@@ -248,7 +271,7 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
         )})}
       </div>
 
-      {filteredData.length === 0 && (
+      {filteredAndSortedData.length === 0 && (
         <div className="text-center text-gray-500 py-20">
           「{searchQuery}」に一致するコスプレ写真が見つかりませんでした。
         </div>
