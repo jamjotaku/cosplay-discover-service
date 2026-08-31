@@ -43,7 +43,7 @@ export default function AuthHeader() {
     setLoading(true);
     setMessage("");
     
-    const dummyEmail = `${userId}@cosplay.local`;
+    const dummyEmail = `${userId}@cosplay.example.com`;
 
     if (isSignUp) {
       if (!nickname) {
