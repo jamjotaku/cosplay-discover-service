@@ -6,7 +6,13 @@ import { User } from "@supabase/supabase-js";
 
 export default function AuthHeader() {
   const [user, setUser] = useState<User | null>(null);
+  
+  // モーダルの状態
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // フォームの状態
   const [userId, setUserId] = useState("");
+  const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -19,6 +25,9 @@ export default function AuthHeader() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        setIsModalOpen(false); // ログイン成功時にモーダルを閉じる
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -34,16 +43,29 @@ export default function AuthHeader() {
     setLoading(true);
     setMessage("");
     
-    // 裏側でダミーのメールアドレスに変換してSupabaseに渡す
     const dummyEmail = `${userId}@cosplay.local`;
 
     if (isSignUp) {
-      const { error } = await supabase.auth.signUp({ email: dummyEmail, password });
+      if (!nickname) {
+        setMessage("ニックネームを入力してください。");
+        setLoading(false);
+        return;
+      }
+      
+      const { error } = await supabase.auth.signUp({ 
+        email: dummyEmail, 
+        password,
+        options: {
+          data: { nickname } // ユーザーメタデータにニックネームを保存
+        }
+      });
+      
       if (error) setMessage(error.message);
       else {
         setMessage("登録完了！自動ログインしました。");
         setUserId("");
         setPassword("");
+        setNickname("");
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email: dummyEmail, password });
@@ -62,59 +84,117 @@ export default function AuthHeader() {
     await supabase.auth.signOut();
   };
 
-  // 表示用のIDをメールアドレスから復元
-  const displayId = user?.email?.split('@')[0] || "Unknown";
+  // 表示用のニックネームまたはIDを取得
+  const displayName = user?.user_metadata?.nickname || user?.email?.split('@')[0] || "Unknown";
 
   return (
-    <div className="absolute top-4 right-4 z-50">
-      {user ? (
-        <div className="flex items-center gap-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-md border border-gray-200">
-          <span className="text-sm font-bold text-gray-700 flex items-center gap-2">
-            <span className="text-lg">👤</span> {displayId}
-          </span>
+    <>
+      <div className="absolute top-4 right-4 z-40">
+        {user ? (
+          <div className="flex items-center gap-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-md border border-gray-200">
+            <span className="text-sm font-bold text-gray-700 flex items-center gap-2">
+              <span className="text-lg">👤</span> {displayName}
+            </span>
+            <button 
+              onClick={handleLogout}
+              className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-1.5 px-3 rounded-full transition-colors"
+            >
+              ログアウト
+            </button>
+          </div>
+        ) : (
           <button 
-            onClick={handleLogout}
-            className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-1.5 px-3 rounded-full transition-colors"
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 bg-white/90 hover:bg-white backdrop-blur-md px-4 py-2 rounded-full shadow-md border border-gray-200 text-sm font-bold text-gray-700 transition-all hover:shadow-lg"
           >
-            ログアウト
+            <span className="text-lg">👤</span> ログイン / 登録
           </button>
+        )}
+      </div>
+
+      {/* ログイン・登録モーダル */}
+      {isModalOpen && !user && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden relative">
+            <button 
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            
+            <div className="p-8">
+              <h2 className="text-2xl font-extrabold text-gray-900 mb-6 text-center">
+                {isSignUp ? "アカウント登録" : "ログイン"}
+              </h2>
+              
+              <form onSubmit={handleAuth} className="space-y-4">
+                {isSignUp && (
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1 ml-1">表示名（ニックネーム）</label>
+                    <input 
+                      type="text" 
+                      placeholder="例: 推し活太郎" 
+                      value={nickname}
+                      onChange={(e) => setNickname(e.target.value)}
+                      required={isSignUp}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+                    />
+                  </div>
+                )}
+                
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1 ml-1">ログインID（半角英数）</label>
+                  <input 
+                    type="text" 
+                    placeholder="example_id" 
+                    value={userId}
+                    onChange={(e) => setUserId(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))}
+                    required
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1 ml-1">パスワード（6文字以上）</label>
+                  <input 
+                    type="password" 
+                    placeholder="••••••••" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+                  />
+                </div>
+                
+                {message && (
+                  <div className="text-red-500 text-sm font-medium text-center bg-red-50 p-2 rounded-lg">
+                    {message}
+                  </div>
+                )}
+                
+                <button 
+                  type="submit" 
+                  disabled={loading}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition-colors mt-2 shadow-md"
+                >
+                  {loading ? "処理中..." : (isSignUp ? "登録してはじめる" : "ログイン")}
+                </button>
+              </form>
+              
+              <div className="mt-6 text-center">
+                <button 
+                  type="button"
+                  onClick={() => { setIsSignUp(!isSignUp); setMessage(""); }}
+                  className="text-sm text-gray-500 hover:text-blue-600 font-medium transition-colors"
+                >
+                  {isSignUp ? "すでにアカウントをお持ちの方はこちら" : "初めての方はこちら（新規登録）"}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      ) : (
-        <form onSubmit={handleAuth} className="flex items-center gap-2 bg-white/90 backdrop-blur-md px-3 py-2 rounded-full shadow-md border border-gray-200">
-          <input 
-            type="text" 
-            placeholder="お好きなID" 
-            value={userId}
-            onChange={(e) => setUserId(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))}
-            required
-            className="text-sm px-3 py-1.5 rounded-full border border-gray-300 focus:outline-none focus:border-blue-500 w-28 bg-gray-50"
-          />
-          <input 
-            type="password" 
-            placeholder="パスワード(6文字~)" 
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="text-sm px-3 py-1.5 rounded-full border border-gray-300 focus:outline-none focus:border-blue-500 w-32 bg-gray-50"
-          />
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors whitespace-nowrap"
-          >
-            {loading ? "処理中..." : (isSignUp ? "新規登録" : "ログイン")}
-          </button>
-          
-          <button 
-            type="button"
-            onClick={() => { setIsSignUp(!isSignUp); setMessage(""); }}
-            className="text-xs text-blue-500 hover:underline ml-1 mr-2"
-          >
-            {isSignUp ? "ログインへ" : "新規登録へ"}
-          </button>
-        </form>
       )}
-      {message && <div className="absolute top-full mt-2 right-0 bg-black/80 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap shadow-lg">{message}</div>}
-    </div>
+    </>
   );
 }
