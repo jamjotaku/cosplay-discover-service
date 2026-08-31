@@ -21,7 +21,17 @@ export async function POST(request: Request) {
     }
 
     const text = tweet.text;
-    const images = tweet.photos?.map(p => p.url) || [];
+    const images = tweet.photos?.map(p => {
+      let url = p.url;
+      if (url.includes('pbs.twimg.com/media/')) {
+        if (url.includes('name=')) {
+          url = url.replace(/name=[a-z0-9_]+/, 'name=large');
+        } else {
+          url += (url.includes('?') ? '&name=large' : '?name=large');
+        }
+      }
+      return url;
+    }) || [];
 
     let character = '不明';
     let series = '不明';
