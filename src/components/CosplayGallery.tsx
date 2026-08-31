@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import dictionary from "@/data/vtuber_dictionary.json";
+import { supabase } from "@/lib/supabase";
+import { User } from "@supabase/supabase-js";
 
 type CosplayData = {
   member: string;
@@ -11,16 +13,69 @@ type CosplayData = {
   [key: string]: any;
 };
 
-type Agency = "All" | "Hololive" | "Nijisanji" | "VSPO";
+type Agency = "All" | "Hololive" | "Nijisanji" | "VSPO" | "Favorites";
 
 export default function CosplayGallery({ data }: { data: CosplayData[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeAgency, setActiveAgency] = useState<Agency>("All");
+  
+  // Auth & Favorites state
+  const [user, setUser] = useState<User | null>(null);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) fetchFavorites(session.user.id);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchFavorites(session.user.id);
+      } else {
+        setFavorites(new Set());
+        if (activeAgency === "Favorites") setActiveAgency("All");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [activeAgency]);
+
+  const fetchFavorites = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('favorites')
+      .select('link')
+      .eq('user_id', userId);
+    
+    if (!error && data) {
+      setFavorites(new Set(data.map(f => f.link)));
+    }
+  };
+
+  const toggleFavorite = async (link: string) => {
+    if (!user) {
+      alert("推し登録するにはログインが必要です！");
+      return;
+    }
+
+    const newFavs = new Set(favorites);
+    if (favorites.has(link)) {
+      // Remove
+      newFavs.delete(link);
+      setFavorites(newFavs);
+      await supabase.from('favorites').delete().eq('user_id', user.id).eq('link', link);
+    } else {
+      // Add
+      newFavs.add(link);
+      setFavorites(newFavs);
+      await supabase.from('favorites').insert({ user_id: user.id, link });
+    }
+  };
 
   // Enhance data with agency and color from the dictionary
   const enhancedData = useMemo(() => {
     return data.map(item => {
-      // Find the character in the dictionary
       const charInfo = dictionary.find(d => 
         d.name === item.member || (item.member && item.member.includes(d.name))
       );
@@ -35,8 +90,10 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
   // Filter by search and agency
   const filteredData = useMemo(() => {
     return enhancedData.filter((item) => {
-      // Agency filter
-      if (activeAgency !== "All" && item.agency !== activeAgency) {
+      // Agency / Favorites filter
+      if (activeAgency === "Favorites") {
+        if (!favorites.has(item.link)) return false;
+      } else if (activeAgency !== "All" && item.agency !== activeAgency) {
         return false;
       }
       
@@ -52,7 +109,7 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
       
       return true;
     });
-  }, [enhancedData, searchQuery, activeAgency]);
+  }, [enhancedData, searchQuery, activeAgency, favorites]);
 
   return (
     <div>
@@ -111,6 +168,16 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
         >
           ぶいすぽっ！
         </button>
+        {user && (
+          <button
+            onClick={() => setActiveAgency("Favorites")}
+            className={`px-5 py-2.5 rounded-full font-bold transition-colors shadow-sm ${
+              activeAgency === "Favorites" ? "bg-pink-500 text-white" : "bg-pink-50 text-pink-500 hover:bg-pink-100"
+            }`}
+          >
+            💖 自分の推し
+          </button>
+        )}
       </div>
 
       <p className="text-sm text-gray-500 mb-6 text-center">
@@ -119,9 +186,11 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
 
       {/* ギャラリー */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
-        {filteredData.map((item, index) => (
+        {filteredData.map((item, index) => {
+          const isFav = favorites.has(item.link);
+          return (
           <div key={index} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-            <div className="relative aspect-[3/4] bg-gray-100">
+            <div className="relative aspect-[3/4] bg-gray-100 group">
               {item.image ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img
@@ -135,6 +204,16 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
                   No Image
                 </div>
               )}
+              
+              {/* いいねボタン */}
+              <button 
+                onClick={() => toggleFavorite(item.link)}
+                className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 transition-transform"
+              >
+                <svg className={`w-6 h-6 ${isFav ? 'text-pink-500 fill-current' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </button>
             </div>
             <div className="p-5">
               <div className="flex items-center gap-2 mb-2">
@@ -159,7 +238,7 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
               )}
             </div>
           </div>
-        ))}
+        )})}
       </div>
 
       {filteredData.length === 0 && (
