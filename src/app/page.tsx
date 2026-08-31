@@ -1,7 +1,7 @@
 import Papa from 'papaparse';
 import CosplayGallery from '@/components/CosplayGallery';
 
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQgV5MvOa8ZUcpQ9jL1HhYQOLS_y78ZoOnQI96iru-5JZVTrRc5Li4hBkN7igEyB5p73EuaaEfLC38G/pub?gid=0&single=true&output=csv";
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRlfU_ch8RSqi8kvmeUs5savNiV6nw8R0SpQbnzocWErtnU-dUNiFyrSJNRmmbaMnojlhqXjMURWDpE/pub?gid=1691074498&single=true&output=csv";
 
 export default async function Home() {
   // GoogleスプレッドシートのCSVをサーバーサイドで取得（60秒キャッシュ）
@@ -26,7 +26,7 @@ export default async function Home() {
           <p className="text-gray-600 text-lg mb-6">スプレッドシートと連動するコスプレギャラリー</p>
           
           <a href="/add" className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-full shadow-md transition-all transform hover:-translate-y-0.5">
-            ＋ 新しいコスプレをAIで追加する
+            ＋ 新しいコスプレを追加する
           </a>
         </header>
 

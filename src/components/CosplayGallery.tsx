@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import dictionary from "@/data/vtuber_dictionary.json";
 
 type CosplayData = {
   member: string;
@@ -10,24 +11,53 @@ type CosplayData = {
   [key: string]: any;
 };
 
+type Agency = "All" | "Hololive" | "Nijisanji" | "VSPO";
+
 export default function CosplayGallery({ data }: { data: CosplayData[] }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeAgency, setActiveAgency] = useState<Agency>("All");
 
-  // 検索クエリに応じてデータをフィルタリング（キャラ名 or レイヤー名）
+  // Enhance data with agency and color from the dictionary
+  const enhancedData = useMemo(() => {
+    return data.map(item => {
+      // Find the character in the dictionary
+      const charInfo = dictionary.find(d => 
+        d.name === item.member || (item.member && item.member.includes(d.name))
+      );
+      return {
+        ...item,
+        agency: charInfo ? charInfo.agency as Agency : "Unknown",
+        color: charInfo ? charInfo.color : "#9ca3af" // Default gray
+      };
+    });
+  }, [data]);
+
+  // Filter by search and agency
   const filteredData = useMemo(() => {
-    if (!searchQuery.trim()) return data;
-    const query = searchQuery.toLowerCase();
-    return data.filter(
-      (item) =>
-        (item.member && item.member.toLowerCase().includes(query)) ||
-        (item.cosplayer && item.cosplayer.toLowerCase().includes(query))
-    );
-  }, [data, searchQuery]);
+    return enhancedData.filter((item) => {
+      // Agency filter
+      if (activeAgency !== "All" && item.agency !== activeAgency) {
+        return false;
+      }
+      
+      // Text search filter
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        const matchesMember = item.member && item.member.toLowerCase().includes(query);
+        const matchesCosplayer = item.cosplayer && item.cosplayer.toLowerCase().includes(query);
+        if (!matchesMember && !matchesCosplayer) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+  }, [enhancedData, searchQuery, activeAgency]);
 
   return (
     <div>
       {/* 検索バー */}
-      <div className="mb-10 max-w-2xl mx-auto">
+      <div className="mb-8 max-w-2xl mx-auto">
         <div className="relative">
           <input
             type="text"
@@ -45,10 +75,47 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
-        <p className="text-sm text-gray-500 mt-3 text-center">
-          全 {data.length} 件中 {filteredData.length} 件を表示
-        </p>
       </div>
+
+      {/* 事務所タブ */}
+      <div className="flex flex-wrap justify-center gap-2 mb-10">
+        <button
+          onClick={() => setActiveAgency("All")}
+          className={`px-5 py-2.5 rounded-full font-medium transition-colors ${
+            activeAgency === "All" ? "bg-gray-800 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          すべて
+        </button>
+        <button
+          onClick={() => setActiveAgency("Hololive")}
+          className={`px-5 py-2.5 rounded-full font-medium transition-colors ${
+            activeAgency === "Hololive" ? "bg-[#56B5D7] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          ホロライブ
+        </button>
+        <button
+          onClick={() => setActiveAgency("Nijisanji")}
+          className={`px-5 py-2.5 rounded-full font-medium transition-colors ${
+            activeAgency === "Nijisanji" ? "bg-[#2C2C2C] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          にじさんじ
+        </button>
+        <button
+          onClick={() => setActiveAgency("VSPO")}
+          className={`px-5 py-2.5 rounded-full font-medium transition-colors ${
+            activeAgency === "VSPO" ? "bg-[#A5C1E7] text-gray-900" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          ぶいすぽっ！
+        </button>
+      </div>
+
+      <p className="text-sm text-gray-500 mb-6 text-center">
+        全 {enhancedData.length} 件中 {filteredData.length} 件を表示
+      </p>
 
       {/* ギャラリー */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
@@ -70,14 +137,18 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
               )}
             </div>
             <div className="p-5">
-              <h3 className="font-bold text-xl text-gray-900 line-clamp-1 mb-1">{item.member}</h3>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
+                <h3 className="font-bold text-xl text-gray-900 line-clamp-1">{item.member}</h3>
+              </div>
               <p className="text-sm text-gray-500 mb-5 line-clamp-1">Cosplayer: <span className="text-gray-700 font-medium">{item.cosplayer}</span></p>
               {item.link ? (
                 <a 
                   href={item.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block w-full text-center bg-black hover:bg-gray-800 text-white font-medium py-2.5 px-4 rounded-xl transition-colors text-sm"
+                  className="block w-full text-center hover:opacity-90 text-white font-medium py-2.5 px-4 rounded-xl transition-opacity text-sm"
+                  style={{ backgroundColor: item.color === '#ffffff' ? '#000000' : item.color, color: item.color === '#ffffff' ? 'white' : 'white', textShadow: '0px 1px 2px rgba(0,0,0,0.5)' }}
                 >
                   X(Twitter)で見る
                 </a>

@@ -1,0 +1,1262 @@
+[
+  {
+    "agency": "Nijisanji",
+    "name": "（にじさんじ公式）",
+    "color": "#2A4B71"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "月ノ美兎",
+    "color": "#E43F3B"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "勇気ちひろ",
+    "color": "#7BB3EE"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "える",
+    "color": "#E2364F"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "渋谷ハジメ",
+    "color": "#D7FAD7"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "樋口楓",
+    "color": "#FBAF71"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "静凛",
+    "color": "#745399"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "鈴谷アキ",
+    "color": "#F2F9C3"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "モイラ",
+    "color": "#91ABD0"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "鈴鹿詩子",
+    "color": "#FA4F62"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "宇志海いちご",
+    "color": "#FFCACE"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "家長むぎ",
+    "color": "#FF899D"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "夕陽リリ",
+    "color": "#BFFFFF"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "物述有栖",
+    "color": "#81D4E2"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "文野環",
+    "color": "#EBDDB4"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "伏見ガク",
+    "color": "#FFCB5B"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "ギルザレンⅢ世",
+    "color": "#002FA7"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "剣持刀也",
+    "color": "#A590AF"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "森中花咲",
+    "color": "#C8F39A"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "叶",
+    "color": "#ABD3D8"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "赤羽葉子",
+    "color": "#CA636C"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "笹木咲",
+    "color": "#EF9AAF"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "闇夜乃モルル",
+    "color": "#EC4676"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "本間ひまわり",
+    "color": "#FBE340"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "魔界ノりりむ",
+    "color": "#EF6F94"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "葛葉",
+    "color": "#ACA7BB"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "雪汝",
+    "color": "#85AFE9"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "椎名唯華",
+    "color": "#F1C8DE"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "ドーラ",
+    "color": "#A83E4A"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "海夜叉神",
+    "color": "#7DC5ED"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "名伽尾アズマ",
+    "color": "#F7A57D"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "出雲霞",
+    "color": "#A9D6E3"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "轟京子",
+    "color": "#E66186"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "シスター・クレア",
+    "color": "#DFC6A8"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "花畑チャイカ",
+    "color": "#40CF84"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "社築",
+    "color": "#B6C6F2"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "安土桃",
+    "color": "#F295CE"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "鈴木勝",
+    "color": "#7B788A"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "緑仙",
+    "color": "#5DCCAB"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "卯月コウ",
+    "color": "#F9E97A"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "八朔ゆず",
+    "color": "#FCCA4D"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "神田笑一",
+    "color": "#F4D35B"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "鳴門こがね",
+    "color": "#---"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "飛鳥ひな",
+    "color": "#FAD8DC"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "春崎エアル",
+    "color": "#4B5F9E"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "雨森小夜",
+    "color": "#756F7D"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "鷹宮リオン",
+    "color": "#CC3D7B"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "舞元啓介",
+    "color": "#094078"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "竜胆尊",
+    "color": "#745BFF"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "でびでび・でびる",
+    "color": "#444C7D"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "桜凛月",
+    "color": "#C57FC7"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "町田ちま",
+    "color": "#80C8EF"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "月見しずく",
+    "color": "#E354AF"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "ジョー・力一",
+    "color": "#D598DD"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "遠北千南",
+    "color": "#FCC5DC"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "成瀬鳴",
+    "color": "#E06489"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "ベルモンド・バンデラス",
+    "color": "#683D46"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "矢車りね",
+    "color": "#FEECD8"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "夢追翔",
+    "color": "#AC324B"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "黒井しば",
+    "color": "#585C82"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "童田明治",
+    "color": "#E34E4F"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "久遠千歳",
+    "color": "#FBD5F1"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "郡道美玲",
+    "color": "#A20063"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "夢月ロア",
+    "color": "#D8368D"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "小野町春香",
+    "color": "#FF336E"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "語部紡",
+    "color": "#07A4E3"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "瀬戸美夜子",
+    "color": "#C4FF2B"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "御伽原江良",
+    "color": "#FFBE5C"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "戌亥とこ",
+    "color": "#92F3A4"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "アンジュ・カトリーナ",
+    "color": "#C83C35"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "リゼ・ヘルエスタ",
+    "color": "#42FFFF"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "三枝明那",
+    "color": "#F03C32"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "愛園愛美",
+    "color": "#F98FB7"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "鈴原るる",
+    "color": "#FFADBB"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "雪城眞尋",
+    "color": "#B4E9FF"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "エクス・アルビオ",
+    "color": "#5C9BBC"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "レヴィ・エリファ",
+    "color": "#FF5A00"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "葉山舞鈴",
+    "color": "#72D5CE"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "ニュイ・ソシエール",
+    "color": "#D24E5F"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "葉加瀬冬雪",
+    "color": "#EEFFFF"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "加賀美ハヤト",
+    "color": "#B9ADB9"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "夜見れな",
+    "color": "#F7265A"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "黛灰",
+    "color": "#086776"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "アルス・アルマル",
+    "color": "#7FD6E2"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "相羽ういは",
+    "color": "#324CAC"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "天宮こころ",
+    "color": "#C5EDFF"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "エリー・コニファー",
+    "color": "#DAFFF9"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "ラトナ・プティ",
+    "color": "#F36C21"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "早瀬走",
+    "color": "#AA7BE8"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "健屋花那",
+    "color": "#FF2FA2"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "シェリン・バーガンディ",
+    "color": "#6C2735"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "フミ",
+    "color": "#F4E49D"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "星川サラ",
+    "color": "#FAB80D"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "山神カルタ",
+    "color": "#384B5A"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "えま★おうがすと",
+    "color": "#B32F51"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "ルイス・キャミー",
+    "color": "#E86A74"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "魔使マオ",
+    "color": "#C93965"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "不破湊",
+    "color": "#BF69F4"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "白雪巴",
+    "color": "#6E3FE7"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "グウェル・オス・ガール",
+    "color": "#F04B2D"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "ましろ爻",
+    "color": "#1E2232"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "奈羅花",
+    "color": "#A02655"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "来栖夏芽",
+    "color": "#8AD1EF"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "フレン・E・ルスタリオ",
+    "color": "#EC1D2F"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "メリッサ・キンレンカ",
+    "color": "#D3F377"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "イブラヒム",
+    "color": "#7CA1F0"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "長尾景",
+    "color": "#625DA1"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "弦月藤士郎",
+    "color": "#B43246"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "甲斐田晴",
+    "color": "#4DD7E3"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "空星きらめ",
+    "color": "#44DDF4"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "朝日南アカネ",
+    "color": "#B7282E"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "周央サンゴ",
+    "color": "#EF8468"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "東堂コハク",
+    "color": "#EA930A"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "北小路ヒスイ",
+    "color": "#38B48B"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "西園チグサ",
+    "color": "#3A8FB7"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "アクシア・クローネ",
+    "color": "#00A6FE"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "ローレン・イロアス",
+    "color": "#C10E49"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "レオス・ヴィンセント",
+    "color": "#234A87"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "オリバー・エバンス",
+    "color": "#BCC37E"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "レイン・パターソン",
+    "color": "#F74848"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "天ヶ瀬むゆ",
+    "color": "#FA5578"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "先斗寧",
+    "color": "#5A7DFF"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "海妹四葉",
+    "color": "#FFE632"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "壱百満天原サロメ",
+    "color": "#CD3796"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "風楽奏斗",
+    "color": "#F0F0F5"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "渡会雲雀",
+    "color": "#192332"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "四季凪アキラ",
+    "color": "#235AAA"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "セラフ・ダズルガーデン",
+    "color": "#DC3C41"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "小清水透",
+    "color": "#CDA5FF"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "獅子堂あかり",
+    "color": "#FFD728"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "鏑木ろこ",
+    "color": "#198CAA"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "五十嵐梨花",
+    "color": "#FF8C3C"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "石神のぞみ",
+    "color": "#E6325F"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "ソフィア・ヴァレンタイン",
+    "color": "#C8C3DC"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "倉持めると",
+    "color": "#EB4682"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "佐伯イッテツ",
+    "color": "#8C4664"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "赤城ウェン",
+    "color": "#FF8C9B"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "宇佐美リト",
+    "color": "#FAC31E"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "緋八マナ",
+    "color": "#64C8F0"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "星導ショウ",
+    "color": "#A58CDC"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "叢雲カゲツ",
+    "color": "#6EB487"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "小柳ロウ",
+    "color": "#5A5FAA"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "伊波ライ",
+    "color": "#DCFF50"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "立伝都々",
+    "color": "#C31E5A"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "栞葉るり",
+    "color": "#2887FF"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "ミラン・ケストレル",
+    "color": "#2C35BD"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "北見遊征",
+    "color": "#FF6E1E"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "魁星",
+    "color": "#0C6F72"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "榊ネス",
+    "color": "#C2AAE6"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "司賀りこ",
+    "color": "#FFE36C"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "珠乃井ナナ",
+    "color": "#63AED9"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "綺沙良",
+    "color": "#846FC7"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "梢桃音",
+    "color": "#FFC6E2"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "ルンルン",
+    "color": "#D8E9FC"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "七瀬すず菜",
+    "color": "#9DD9B9"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "早乙女ベリー",
+    "color": "#DF6D7C"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "雲母たまこ",
+    "color": "#FFD264"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "酒寄颯馬",
+    "color": "#BA6EA5"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "渚トラウト",
+    "color": "#77B6C2"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "一橋綾人",
+    "color": "#9FCEC9"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "五木左京",
+    "color": "#F3A4A9"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "十河ののは",
+    "color": "#7DC7B0"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "夜牛詩乃",
+    "color": "#BD81D4"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "蝸堂みかる",
+    "color": "#FFE673"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "猫屋敷美紅",
+    "color": "#FF8C73"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "皇れお",
+    "color": "#EEB1CC"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "篠宮ゆの",
+    "color": "#AAD9F4"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "城瀬いすみ",
+    "color": "#E5E2F6"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "花籠つばさ",
+    "color": "#818FBF"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "白砂あやね",
+    "color": "#54A2E5"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "水面まどか",
+    "color": "#FF8184"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "男虎",
+    "color": "#442657"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "九里詠太",
+    "color": "#CC8F7A"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "小々波いるか",
+    "color": "#4270B2"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "千凛あゆむ",
+    "color": "#543298"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "塚原大地",
+    "color": "#4A4A5C"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "御子神琴音",
+    "color": "#D0669A"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "Rei7",
+    "color": "#4BB3CE"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "レヨン",
+    "color": "#558E8D"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "ぷりん・らら・もーど",
+    "color": "#FFCEF1"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "ぽめろ・ぱんち",
+    "color": "#FFEEA0"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "神永タイガ",
+    "color": "#E4D571"
+  },
+  {
+    "agency": "Nijisanji",
+    "name": "山田龍一郎",
+    "color": "#82ACC8"
+  },
+  {
+    "agency": "VSPO",
+    "name": "花芽すみれ",
+    "color": "#BECCFF"
+  },
+  {
+    "agency": "VSPO",
+    "name": "花芽なずな",
+    "color": "#FABEDC"
+  },
+  {
+    "agency": "VSPO",
+    "name": "小雀とと",
+    "color": "#FFF33F"
+  },
+  {
+    "agency": "VSPO",
+    "name": "一ノ瀬うるは",
+    "color": "#4182FA"
+  },
+  {
+    "agency": "VSPO",
+    "name": "胡桃のあ",
+    "color": "#B297D7"
+  },
+  {
+    "agency": "VSPO",
+    "name": "兎咲ミミ",
+    "color": "#C7B2D6"
+  },
+  {
+    "agency": "VSPO",
+    "name": "空澄セナ",
+    "color": "#FFFFFF"
+  },
+  {
+    "agency": "VSPO",
+    "name": "橘ひなの",
+    "color": "#FA96C8"
+  },
+  {
+    "agency": "VSPO",
+    "name": "英リサ",
+    "color": "#D1DE79"
+  },
+  {
+    "agency": "VSPO",
+    "name": "如月れん",
+    "color": "#BE2152"
+  },
+  {
+    "agency": "VSPO",
+    "name": "神成きゅぴ",
+    "color": "#FFD23C"
+  },
+  {
+    "agency": "VSPO",
+    "name": "八雲べに",
+    "color": "#85CAB3"
+  },
+  {
+    "agency": "VSPO",
+    "name": "藍沢エマ",
+    "color": "#B4F1F9"
+  },
+  {
+    "agency": "VSPO",
+    "name": "紫宮るな",
+    "color": "#D6ADFF"
+  },
+  {
+    "agency": "VSPO",
+    "name": "猫汰つな",
+    "color": "#FF3652"
+  },
+  {
+    "agency": "VSPO",
+    "name": "白波らむね",
+    "color": "#8ECED9"
+  },
+  {
+    "agency": "VSPO",
+    "name": "小森めと",
+    "color": "#FBA03F"
+  },
+  {
+    "agency": "VSPO",
+    "name": "夢野あかり",
+    "color": "#FF8684"
+  },
+  {
+    "agency": "VSPO",
+    "name": "夜乃くろむ",
+    "color": "#909EC8"
+  },
+  {
+    "agency": "VSPO",
+    "name": "紡木こかげ",
+    "color": "#5195E1"
+  },
+  {
+    "agency": "VSPO",
+    "name": "千燈ゆうひ",
+    "color": "#ED784A"
+  },
+  {
+    "agency": "VSPO",
+    "name": "蝶屋はなび",
+    "color": "#EA5506"
+  },
+  {
+    "agency": "VSPO",
+    "name": "甘結もか",
+    "color": "#ECA0AA"
+  },
+  {
+    "agency": "VSPO",
+    "name": "銀城サイネ",
+    "color": "#58535E"
+  },
+  {
+    "agency": "VSPO",
+    "name": "龍巻ちせ",
+    "color": "#BEFF77"
+  },
+  {
+    "agency": "Hololive",
+    "name": "ときのそら",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "ロボ子さん",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "さくらみこ",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "星街すいせい",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "AZKI",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "アキ・ローゼンタール",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "赤井はあと",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "白上フブキ",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "夏色まつり",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "百鬼あやめ",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "癒月ちょこ",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "大空スバル",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "湊あくあ",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "紫咲シオン",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "大神ミオ",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "猫又おかゆ",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "戌神ころね",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "兎田ぺこら",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "不知火フレア",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "白銀ノエル",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "宝鐘マリン",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "角巻わため",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "常闇トワ",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "姫森ルーナ",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "天音かなた",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "桐生ココ",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "雪花ラミィ",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "桃鈴ねね",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "獅白ぼたん",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "尾丸ポルカ",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "ラプラス・ダークネス",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "鷹嶺ルイ",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "博衣こより",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "沙花叉クロヱ",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "風真いろは",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "音乃瀬奏",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "一条莉々華",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "儒烏風亭らでん",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "轟はじめ",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "響咲リオナ",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "虎金妃笑虎",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "水宮枢",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "輪堂千速",
+    "color": "#cccccc"
+  },
+  {
+    "agency": "Hololive",
+    "name": "綺々羅々ヴィヴィ",
+    "color": "#cccccc"
+  }
+]
