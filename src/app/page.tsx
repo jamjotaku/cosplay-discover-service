@@ -14,7 +14,8 @@ export default async function Home() {
     skipEmptyLines: true,
   });
 
-  const data = parsed.data as any[];
+  // スプレッドシート上で中身を消去して「,,,」のようになった空の行を除外する
+  const data = (parsed.data as any[]).filter(row => row.member && row.member.trim() !== "");
 
   return (
     <main className="min-h-screen bg-gray-50 p-4 sm:p-8">
