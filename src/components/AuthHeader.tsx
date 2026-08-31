@@ -43,7 +43,10 @@ export default function AuthHeader() {
     setLoading(true);
     setMessage("");
     
-    const dummyEmail = `${userId}@cosplay.example.com`;
+    // IDに含まれる記号（アンダーバーなど）がSupabaseの厳格なメールアドレスチェックで弾かれるため、
+    // IDを安全な英数字のみの文字列（16進数）に変換してからダミーメールを生成します
+    const hexId = Array.from(new TextEncoder().encode(userId)).map(b => b.toString(16).padStart(2, '0')).join('');
+    const dummyEmail = `u${hexId}@cosplay.example.com`;
 
     if (isSignUp) {
       if (!nickname) {
