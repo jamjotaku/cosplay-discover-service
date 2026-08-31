@@ -20,34 +20,35 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
   const [activeAgency, setActiveAgency] = useState<Agency>("All");
   
   // Auth & Favorites state
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<{ id: string; nickname: string } | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
+  // ログイン状態とFavoritesの同期
+  const syncAuth = () => {
+    const storedUser = localStorage.getItem("cosplay_user");
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      fetchFavorites(parsedUser.id);
+    } else {
+      setUser(null);
+      setFavorites(new Set());
+    }
+  };
+
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) fetchFavorites(session.user.id);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchFavorites(session.user.id);
-      } else {
-        setFavorites(new Set());
-        if (activeAgency === "Favorites") setActiveAgency("All");
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [activeAgency]);
+    syncAuth();
+    // AuthHeaderからのログイン/ログアウト通知を受け取る
+    window.addEventListener("auth_changed", syncAuth);
+    return () => window.removeEventListener("auth_changed", syncAuth);
+  }, []);
 
   const fetchFavorites = async (userId: string) => {
     const { data, error } = await supabase
-      .from('favorites')
+      .from('custom_favorites')
       .select('link')
       .eq('user_id', userId);
-    
+      
     if (!error && data) {
       setFavorites(new Set(data.map(f => f.link)));
     }
@@ -55,21 +56,27 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
 
   const toggleFavorite = async (link: string) => {
     if (!user) {
-      alert("推し登録するにはログインが必要です！");
+      alert("推し登録をするにはログインが必要です！");
       return;
     }
 
-    const newFavs = new Set(favorites);
-    if (favorites.has(link)) {
-      // Remove
-      newFavs.delete(link);
-      setFavorites(newFavs);
-      await supabase.from('favorites').delete().eq('user_id', user.id).eq('link', link);
+    const newFavorites = new Set(favorites);
+    const isCurrentlyFavorite = newFavorites.has(link);
+
+    if (isCurrentlyFavorite) {
+      newFavorites.delete(link);
+      setFavorites(newFavorites);
+      await supabase
+        .from('custom_favorites')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('link', link);
     } else {
-      // Add
-      newFavs.add(link);
-      setFavorites(newFavs);
-      await supabase.from('favorites').insert({ user_id: user.id, link });
+      newFavorites.add(link);
+      setFavorites(newFavorites);
+      await supabase
+        .from('custom_favorites')
+        .insert({ user_id: user.id, link });
     }
   };
 

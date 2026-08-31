@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { User } from "@supabase/supabase-js";
 
 export default function AuthHeader() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<{ id: string; nickname: string } | null>(null);
   
   // モーダルの状態
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,34 +18,22 @@ export default function AuthHeader() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        setIsModalOpen(false); // ログイン成功時にモーダルを閉じる
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    // ローカルストレージからログイン状態を復元
+    const storedUser = localStorage.getItem("cosplay_user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
   }, []);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (userId.length < 3 || password.length < 6) {
-      setMessage("IDは3文字以上、パスワードは6文字以上にしてください。");
+    if (userId.length < 3 || password.length < 4) {
+      setMessage("IDは3文字以上、パスワードは4文字以上にしてください。");
       return;
     }
     
     setLoading(true);
     setMessage("");
-    
-    // IDに含まれる記号（アンダーバーなど）がSupabaseの厳格なメールアドレスチェックで弾かれるため、
-    // IDを安全な英数字のみの文字列（16進数）に変換してからダミーメールを生成します
-    const hexId = Array.from(new TextEncoder().encode(userId)).map(b => b.toString(16).padStart(2, '0')).join('');
-    const dummyEmail = `u${hexId}@gmail.com`;
 
     if (isSignUp) {
       if (!nickname) {
@@ -55,40 +42,60 @@ export default function AuthHeader() {
         return;
       }
       
-      const { error } = await supabase.auth.signUp({ 
-        email: dummyEmail, 
-        password,
-        options: {
-          data: { nickname } // ユーザーメタデータにニックネームを保存
+      // 新規登録：custom_usersテーブルに挿入
+      const { data, error } = await supabase
+        .from('custom_users')
+        .insert([{ id: userId, password: password, nickname: nickname }])
+        .select()
+        .single();
+        
+      if (error) {
+        if (error.code === '23505') { // 一意制約違反
+          setMessage("このIDは既に使われています。別のIDをお試しください。");
+        } else {
+          setMessage("登録エラー: " + error.message);
         }
-      });
-      
-      if (error) setMessage(error.message);
-      else {
-        setMessage("登録完了！自動ログインしました。");
+      } else if (data) {
+        // 登録成功、自動ログイン
+        const userData = { id: data.id, nickname: data.nickname };
+        localStorage.setItem("cosplay_user", JSON.stringify(userData));
+        setUser(userData);
+        setIsModalOpen(false);
         setUserId("");
         setPassword("");
         setNickname("");
+        window.dispatchEvent(new Event("auth_changed")); // ギャラリー側に通知
       }
     } else {
-      const { error } = await supabase.auth.signInWithPassword({ email: dummyEmail, password });
-      if (error) {
+      // ログイン：custom_usersテーブルを検索
+      const { data, error } = await supabase
+        .from('custom_users')
+        .select('*')
+        .eq('id', userId)
+        .eq('password', password)
+        .single();
+        
+      if (error || !data) {
         setMessage("IDまたはパスワードが間違っています。");
       } else {
-        setMessage("");
+        // ログイン成功
+        const userData = { id: data.id, nickname: data.nickname };
+        localStorage.setItem("cosplay_user", JSON.stringify(userData));
+        setUser(userData);
+        setIsModalOpen(false);
         setUserId("");
         setPassword("");
+        window.dispatchEvent(new Event("auth_changed")); // ギャラリー側に通知
       }
     }
     setLoading(false);
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleLogout = () => {
+    localStorage.removeItem("cosplay_user");
+    setUser(null);
+    window.dispatchEvent(new Event("auth_changed")); // ギャラリー側に通知
   };
-
-  // 表示用のニックネームまたはIDを取得
-  const displayName = user?.user_metadata?.nickname || user?.email?.split('@')[0] || "Unknown";
 
   return (
     <>
@@ -96,7 +103,7 @@ export default function AuthHeader() {
         {user ? (
           <div className="flex items-center gap-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-md border border-gray-200">
             <span className="text-sm font-bold text-gray-700 flex items-center gap-2">
-              <span className="text-lg">👤</span> {displayName}
+              <span className="text-lg">👤</span> {user.nickname}
             </span>
             <button 
               onClick={handleLogout}
@@ -159,10 +166,10 @@ export default function AuthHeader() {
                 </div>
                 
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1 ml-1">パスワード（6文字以上）</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1 ml-1">パスワード（4文字以上）</label>
                   <input 
                     type="password" 
-                    placeholder="••••••••" 
+                    placeholder="••••" 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
