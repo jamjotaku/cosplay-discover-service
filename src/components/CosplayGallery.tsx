@@ -210,6 +210,32 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
         )}
       </div>
 
+      {/* 並び替えトグル */}
+      <div className="flex justify-center mb-8">
+        <div className="inline-flex items-center space-x-1 bg-white rounded-full p-1.5 border border-gray-200 shadow-sm">
+          <button
+            onClick={() => setSortOrder("Default")}
+            className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${
+              sortOrder === "Default" 
+                ? "bg-blue-50 text-blue-700 shadow-sm" 
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            追加順
+          </button>
+          <button
+            onClick={() => setSortOrder("Debut")}
+            className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${
+              sortOrder === "Debut" 
+                ? "bg-blue-50 text-blue-700 shadow-sm" 
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            デビュー順
+          </button>
+        </div>
+      </div>
+
       <p className="text-sm text-gray-500 mb-6 text-center">
         全 {enhancedData.length} 件中 {filteredAndSortedData.length} 件を表示
       </p>
