@@ -33,7 +33,24 @@ export async function POST(request: Request) {
     for (const charData of sortedDictionary) {
       const normalizedCharName = charData.name.toLowerCase().replace(/[\s\n_　]/g, "");
       
+      let matched = false;
+      
+      // 1. 名前でのマッチング
       if (normalizedCharName.length >= 2 && normalizedText.includes(normalizedCharName)) {
+        matched = true;
+      }
+      
+      // 2. ファンマークでのマッチング
+      if (!matched && charData.fanmarks && charData.fanmarks.length > 0) {
+        for (const fm of charData.fanmarks) {
+          if (text.includes(fm)) {
+            matched = true;
+            break;
+          }
+        }
+      }
+      
+      if (matched) {
         character = charData.name;
         agency = charData.agency;
         color = charData.color;
