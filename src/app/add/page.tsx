@@ -6,6 +6,7 @@ import Link from "next/link";
 export default function AddCosplayPage() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
 
@@ -34,6 +35,31 @@ export default function AddCosplayPage() {
     }
   };
 
+  const handleSave = async () => {
+    if (!result) return;
+    setSaving(true);
+    try {
+      const payload = {
+        member: result.analysis.character,
+        cosplayer: result.tweet.author,
+        image: result.tweet.images && result.tweet.images.length > 0 ? result.tweet.images[0] : "",
+        link: url
+      };
+      const qs = new URLSearchParams(payload).toString();
+      // 先ほど発行したGASのウェブアプリURL
+      const gasUrl = `https://script.google.com/macros/s/AKfycbw0SKfTltoEYs8vk6ez9sGYLxTs7ore8lOlNlhxpfEfJnHnQKnU4hSlDwu6HXr7Qoz8/exec?${qs}`;
+      
+      await fetch(gasUrl, { mode: 'no-cors' });
+      alert('スプレッドシートに登録しました！');
+      setUrl("");
+      setResult(null);
+    } catch (err: any) {
+      alert('エラーが発生しました: ' + err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-gray-50 p-4 sm:p-8">
       <div className="max-w-3xl mx-auto">
@@ -42,9 +68,9 @@ export default function AddCosplayPage() {
         </Link>
         
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-10">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">ポートフォリオに追加</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">コスプレ写真を追加</h1>
           <p className="text-gray-500 mb-8">
-            X(Twitter)の画像付きツイートのURLを貼り付けるだけで、データベース（5000件）と照合してキャラクター名を自動で特定します。
+            X(Twitter)の画像付きツイートのURLを貼り付けるだけで、ローカルのVTuber辞書（252名）と高速照合してキャラクター名を特定します。
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -60,7 +86,7 @@ export default function AddCosplayPage() {
               disabled={loading || !url}
               className="bg-black hover:bg-gray-800 disabled:bg-gray-400 text-white font-medium py-3 px-8 rounded-xl transition-colors whitespace-nowrap"
             >
-              {loading ? "データベースと照合中..." : "自動抽出する"}
+              {loading ? "辞書と照合中..." : "抽出する"}
             </button>
           </div>
 
@@ -88,17 +114,17 @@ export default function AddCosplayPage() {
                   )}
                 </div>
 
-                {/* AI解析結果 */}
+                {/* 解析結果 */}
                 <div className="space-y-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-1">推測された作品名</label>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">推測された事務所</label>
                     <div className="font-bold text-xl text-gray-900 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">
-                      {result.analysis.series}
+                      {result.analysis.agency}
                     </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-500 mb-1">推測されたキャラクター名</label>
-                    <div className="font-bold text-xl text-blue-600 bg-blue-50 px-4 py-3 rounded-lg border border-blue-100">
+                    <div className="font-bold text-xl text-white px-4 py-3 rounded-lg border shadow-sm" style={{ backgroundColor: result.analysis.color === '#ffffff' ? '#000000' : result.analysis.color, textShadow: '0px 1px 2px rgba(0,0,0,0.5)' }}>
                       {result.analysis.character}
                     </div>
                   </div>
@@ -113,10 +139,13 @@ export default function AddCosplayPage() {
                     </p>
                   </div>
 
-                  <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-xl mt-4 shadow-md transition-all transform hover:-translate-y-1">
-                    この内容でスプレッドシートに登録
+                  <button 
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-4 px-4 rounded-xl mt-4 shadow-md transition-all transform hover:-translate-y-1"
+                  >
+                    {saving ? "保存中..." : "この内容でスプレッドシートに登録"}
                   </button>
-                  <p className="text-xs text-center text-gray-400 mt-2">※現在はデモのためボタンを押しても保存されません</p>
                 </div>
               </div>
             </div>
