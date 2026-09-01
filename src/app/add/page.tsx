@@ -14,6 +14,7 @@ export default function AddCosplayPage() {
   const [editCharacter, setEditCharacter] = useState("");
   const [editCosplayer, setEditCosplayer] = useState("");
   const [editAgency, setEditAgency] = useState("");
+  const [editUnit, setEditUnit] = useState("");
 
   const handleAnalyze = async () => {
     if (!url) return;
@@ -37,6 +38,7 @@ export default function AddCosplayPage() {
       setEditCharacter(data.analysis.character || "");
       setEditCosplayer(data.tweet.author || "");
       setEditAgency(data.analysis.agency || "");
+      setEditUnit(""); // 分析時は一旦空にするか、AIに推測させることも可能
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -52,7 +54,8 @@ export default function AddCosplayPage() {
         member: editCharacter,
         cosplayer: editCosplayer,
         image: result.tweet.images && result.tweet.images.length > 0 ? result.tweet.images[0] : "",
-        link: url
+        link: url,
+        unit: editUnit
       };
       const qs = new URLSearchParams(payload).toString();
       const gasUrl = `https://script.google.com/macros/s/AKfycbw0SKfTltoEYs8vk6ez9sGYLxTs7ore8lOlNlhxpfEfJnHnQKnU4hSlDwu6HXr7Qoz8/exec?${qs}`;
@@ -124,6 +127,16 @@ export default function AddCosplayPage() {
 
                 {/* 解析結果（編集フォーム） */}
                 <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">ユニット名・備考（任意）</label>
+                    <input
+                      type="text"
+                      value={editUnit}
+                      onChange={(e) => setEditUnit(e.target.value)}
+                      className="w-full text-gray-900 bg-white px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+                      placeholder="例: ChroNoiR、miComet など"
+                    />
+                  </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-500 mb-1">推測されたキャラクター名</label>
                     <input

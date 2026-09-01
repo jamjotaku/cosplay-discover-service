@@ -10,6 +10,7 @@ type CosplayData = {
   cosplayer: string;
   image: string;
   link: string;
+  unit?: string;
   [key: string]: any;
 };
 
@@ -153,7 +154,8 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
         const query = searchQuery.toLowerCase();
         const matchesMember = item.member && item.member.toLowerCase().includes(query);
         const matchesCosplayer = item.cosplayer && item.cosplayer.toLowerCase().includes(query);
-        if (!matchesMember && !matchesCosplayer) {
+        const matchesUnit = item.unit && item.unit.toLowerCase().includes(query);
+        if (!matchesMember && !matchesCosplayer && !matchesUnit) {
           return false;
         }
       }
@@ -319,6 +321,17 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
               </button>
             </div>
             <div className="p-5">
+              {item.unit && (
+                <div className="mb-3">
+                  <button 
+                    onClick={() => { setSearchQuery(item.unit!); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors"
+                    title={`${item.unit}のコスプレで絞り込む`}
+                  >
+                    👑 {item.unit}
+                  </button>
+                </div>
+              )}
               <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
                 {item.matchedChars && item.matchedChars.length > 0 ? (
                   item.matchedChars.map((char: any, i: number) => (
