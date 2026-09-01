@@ -58,7 +58,7 @@ export default function AddCosplayPage() {
         unit: editUnit
       };
       const qs = new URLSearchParams(payload).toString();
-      const gasUrl = `https://script.google.com/macros/s/AKfycbw0SKfTltoEYs8vk6ez9sGYLxTs7ore8lOlNlhxpfEfJnHnQKnU4hSlDwu6HXr7Qoz8/exec?${qs}`;
+      const gasUrl = `https://script.google.com/macros/s/AKfycbza9LCslkHwa9Vbtmy6dGBAe14C6c_0S4pg_-D65kuCMfFH4W_V9MCvGh106Pr_m4qI/exec?${qs}`;
       
       await fetch(gasUrl, { mode: 'no-cors' });
       alert('スプレッドシートに登録しました！');
