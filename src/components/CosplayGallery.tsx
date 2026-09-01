@@ -287,9 +287,24 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
             <div className="p-5">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
-                <h3 className="font-bold text-xl text-gray-900 line-clamp-1">{item.member}</h3>
+                <button 
+                  onClick={() => { setSearchQuery(item.member); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className="font-bold text-xl text-gray-900 line-clamp-1 hover:text-blue-600 transition-colors text-left"
+                  title={`${item.member}のコスプレで絞り込む`}
+                >
+                  {item.member}
+                </button>
               </div>
-              <p className="text-sm text-gray-500 mb-5 line-clamp-1">Cosplayer: <span className="text-gray-700 font-medium">{item.cosplayer}</span></p>
+              <p className="text-sm text-gray-500 mb-5 line-clamp-1">
+                Cosplayer: 
+                <button 
+                  onClick={() => { setSearchQuery(item.cosplayer); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className="text-gray-700 font-medium hover:text-blue-600 hover:underline transition-all ml-1"
+                  title={`${item.cosplayer}さんの他のコスプレを見る`}
+                >
+                  {item.cosplayer}
+                </button>
+              </p>
               {item.link ? (
                 <a 
                   href={item.link}
