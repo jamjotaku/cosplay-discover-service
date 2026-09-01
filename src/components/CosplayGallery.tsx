@@ -93,13 +93,18 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
   // Enhance data with agency and color from the dictionary
   const enhancedData = useMemo(() => {
     return data.map(item => {
-      const charInfo = dictionary.find(d => 
+      // 複数人（併せ）に対応するため、文字列に含まれるすべてのキャラを抽出
+      const matchedChars = dictionary.filter(d => 
         d.name === item.member || (item.member && item.member.includes(d.name))
       );
+      
+      const primaryChar = matchedChars.length > 0 ? matchedChars[0] : null;
+
       return {
         ...item,
-        agency: charInfo ? charInfo.agency as Agency : "Unknown",
-        color: charInfo ? charInfo.color : "#9ca3af", // Default gray
+        agency: primaryChar ? primaryChar.agency as Agency : "Unknown",
+        color: primaryChar ? primaryChar.color : "#9ca3af", // Default gray
+        matchedChars: matchedChars, // 抽出した全キャラ情報を保持
         _randomSortValue: Math.random() // セッションごとの固定ランダム値
       };
     });
@@ -254,18 +259,18 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
       </p>
 
       {/* ギャラリー */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
+      <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6 md:gap-8 space-y-6 md:space-y-8">
         {filteredAndSortedData.map((item, index) => {
           const isFav = favorites.has(item.link);
           return (
-          <div key={index} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-            <div className="relative aspect-[3/4] bg-gray-100 group">
+          <div key={index} className="break-inside-avoid bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="relative bg-gray-100 group">
               {item.image ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   src={item.image}
                   alt={`${item.cosplayer} - ${item.member}`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-auto object-cover"
                   loading="lazy"
                 />
               ) : (
@@ -285,15 +290,32 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
               </button>
             </div>
             <div className="p-5">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
-                <button 
-                  onClick={() => { setSearchQuery(item.member); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  className="font-bold text-xl text-gray-900 line-clamp-1 hover:text-blue-600 transition-colors text-left"
-                  title={`${item.member}のコスプレで絞り込む`}
-                >
-                  {item.member}
-                </button>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
+                {item.matchedChars && item.matchedChars.length > 0 ? (
+                  item.matchedChars.map((char: any, i: number) => (
+                    <div key={i} className="flex items-center gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: char.color }}></div>
+                      <button 
+                        onClick={() => { setSearchQuery(char.name); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                        className="font-bold text-gray-900 hover:text-blue-600 transition-colors text-left text-base"
+                        title={`${char.name}のコスプレで絞り込む`}
+                      >
+                        {char.name}
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }}></div>
+                    <button 
+                      onClick={() => { setSearchQuery(item.member); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                      className="font-bold text-gray-900 hover:text-blue-600 transition-colors text-left text-base"
+                      title={`${item.member}のコスプレで絞り込む`}
+                    >
+                      {item.member}
+                    </button>
+                  </div>
+                )}
               </div>
               <p className="text-sm text-gray-500 mb-5 line-clamp-1">
                 Cosplayer: 
