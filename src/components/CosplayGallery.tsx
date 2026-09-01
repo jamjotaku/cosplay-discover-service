@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import dictionary from "@/data/vtuber_dictionary.json";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
@@ -23,7 +23,6 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
   
   // 無限スクロール用の状態
   const [displayCount, setDisplayCount] = useState(30);
-  const observerTarget = useRef<HTMLDivElement>(null);
 
   // Auth & Favorites state
   const [user, setUser] = useState<{ id: string; nickname: string } | null>(null);
@@ -63,22 +62,21 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
     setDisplayCount(30);
   }, [searchQuery, activeAgency, sortOrder]);
 
-  // 無限スクロールの監視
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting) {
-          setDisplayCount(prev => prev + 30);
-        }
-      },
-      { rootMargin: "200px" } // 画面下部より200px手前で次を読み込む
-    );
-
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
+  // 無限スクロールの監視（useCallback Refで安全に実装）
+  const observer = useRef<IntersectionObserver | null>(null);
+  const observerTarget = useCallback((node: HTMLDivElement | null) => {
+    if (observer.current) observer.current.disconnect();
+    if (node) {
+      observer.current = new IntersectionObserver(
+        entries => {
+          if (entries[0].isIntersecting) {
+            setDisplayCount(prev => prev + 30);
+          }
+        },
+        { rootMargin: "600px" } // 大きめにマージンを取る
+      );
+      observer.current.observe(node);
     }
-
-    return () => observer.disconnect();
   }, []);
 
   const fetchFavorites = async (userId: string) => {
@@ -295,7 +293,7 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
           const isFav = favorites.has(item.link);
           return (
           <div key={index} className="break-inside-avoid bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-            <div className="relative bg-gray-100 group">
+            <div className="relative bg-gray-100 group min-h-[200px]">
               {item.image ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img
