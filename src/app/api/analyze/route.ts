@@ -40,6 +40,8 @@ export async function POST(request: Request) {
 
     const normalizedText = text.toLowerCase().replace(/[\s\n_　]/g, ""); 
 
+    let matchedCharacters: any[] = [];
+
     for (const charData of sortedDictionary) {
       const normalizedCharName = charData.name.toLowerCase().replace(/[\s\n_　]/g, "");
       
@@ -61,17 +63,23 @@ export async function POST(request: Request) {
       }
       
       if (matched) {
-        character = charData.name;
-        agency = charData.agency;
-        color = charData.color;
-        
-        // 事務所名に合わせてシリーズを設定
-        if (agency === 'Hololive') series = 'ホロライブ';
-        else if (agency === 'Nijisanji') series = 'にじさんじ';
-        else if (agency === 'VSPO') series = 'ぶいすぽっ！';
-        
-        break; 
+        // すでに部分一致で含まれているキャラ（例：「ペコラ」と「兎田ぺこら」）の重複を防ぐ
+        const isSubset = matchedCharacters.some(existing => existing.name.includes(charData.name));
+        if (!isSubset) {
+          matchedCharacters.push(charData);
+        }
       }
+    }
+
+    if (matchedCharacters.length > 0) {
+      // 複数見つかった場合はスラッシュで結合
+      character = matchedCharacters.map(c => c.name).join('/');
+      agency = matchedCharacters[0].agency; // 最初のキャラの事務所を優先
+      color = matchedCharacters[0].color;
+      
+      if (agency === 'Hololive') series = 'ホロライブ';
+      else if (agency === 'Nijisanji') series = 'にじさんじ';
+      else if (agency === 'VSPO') series = 'ぶいすぽっ！';
     }
 
     return NextResponse.json({
