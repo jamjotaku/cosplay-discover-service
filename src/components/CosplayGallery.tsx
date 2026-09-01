@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import dictionary from "@/data/vtuber_dictionary.json";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
@@ -20,6 +20,10 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
   const [activeAgency, setActiveAgency] = useState<Agency>("All");
   const [sortOrder, setSortOrder] = useState<"Random" | "Default" | "Debut">("Random");
   
+  // 無限スクロール用の状態
+  const [displayCount, setDisplayCount] = useState(30);
+  const observerTarget = useRef<HTMLDivElement>(null);
+
   // Auth & Favorites state
   const [user, setUser] = useState<{ id: string; nickname: string } | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
@@ -51,6 +55,29 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
     // AuthHeaderからのログイン/ログアウト通知を受け取る
     window.addEventListener("auth_changed", syncAuth);
     return () => window.removeEventListener("auth_changed", syncAuth);
+  }, []);
+
+  // 検索やソートが変わったら表示件数をリセット
+  useEffect(() => {
+    setDisplayCount(30);
+  }, [searchQuery, activeAgency, sortOrder]);
+
+  // 無限スクロールの監視
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting) {
+          setDisplayCount(prev => prev + 30);
+        }
+      },
+      { rootMargin: "200px" } // 画面下部より200px手前で次を読み込む
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => observer.disconnect();
   }, []);
 
   const fetchFavorites = async (userId: string) => {
@@ -148,6 +175,8 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
 
     return result;
   }, [enhancedData, searchQuery, activeAgency, favorites, sortOrder, debutOrderMap]);
+
+  const displayedData = filteredAndSortedData.slice(0, displayCount);
 
   return (
     <div>
@@ -260,7 +289,7 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
 
       {/* ギャラリー */}
       <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6 md:gap-8 space-y-6 md:space-y-8">
-        {filteredAndSortedData.map((item, index) => {
+        {displayedData.map((item, index) => {
           const isFav = favorites.has(item.link);
           return (
           <div key={index} className="break-inside-avoid bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
@@ -344,8 +373,16 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
               )}
             </div>
           </div>
-        )})}
+          );
+        })}
       </div>
+
+      {/* 無限スクロール検知用の透明な要素 */}
+      {displayCount < filteredAndSortedData.length && (
+        <div ref={observerTarget} className="w-full h-20 flex items-center justify-center mt-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      )}
 
       {filteredAndSortedData.length === 0 && (
         <div className="text-center text-gray-500 py-20">
