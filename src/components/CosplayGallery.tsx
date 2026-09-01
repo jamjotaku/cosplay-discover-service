@@ -321,23 +321,28 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
             <div className="p-5">
               {item.unit ? (
                 <>
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <div className="flex -space-x-1">
-                      {item.matchedChars && item.matchedChars.map((char: any, i: number) => (
-                        <div key={i} className="w-3.5 h-3.5 rounded-full border border-white" style={{ backgroundColor: char.color }} title={char.name}></div>
-                      ))}
-                    </div>
+                  <div className="flex flex-wrap items-center gap-2 mb-1.5">
                     <button 
                       onClick={() => { setSearchQuery(item.unit!); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                      className="font-bold text-xl text-gray-900 hover:text-purple-600 transition-colors line-clamp-1 text-left"
+                      className="font-bold text-xl text-gray-900 hover:text-purple-600 transition-colors text-left"
                       title={`${item.unit}のコスプレで絞り込む`}
                     >
                       👑 {item.unit}
                     </button>
+                    <div className="flex -space-x-1 items-center">
+                      {item.matchedChars && item.matchedChars.slice(0, 5).map((char: any, i: number) => (
+                        <div key={i} className="w-3.5 h-3.5 rounded-full border border-white z-0" style={{ backgroundColor: char.color }} title={char.name}></div>
+                      ))}
+                      {item.matchedChars && item.matchedChars.length > 5 && (
+                        <div className="w-6 h-3.5 rounded-full border border-white bg-gray-100 flex items-center justify-center text-[9px] font-bold text-gray-600 z-10 -ml-1">
+                          +{item.matchedChars.length - 5}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   {/* 個人名も小さく表示して検索できるようにする */}
                   {item.matchedChars && item.matchedChars.length > 0 && (
-                    <div className="flex flex-wrap gap-x-2 gap-y-1 mb-3 pl-1">
+                    <div className="flex flex-wrap gap-x-2 gap-y-1 mb-3 pl-1 max-h-[80px] overflow-y-auto">
                       {item.matchedChars.map((char: any, i: number) => (
                         <button 
                           key={i}
