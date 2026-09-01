@@ -319,44 +319,66 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
               </button>
             </div>
             <div className="p-5">
-              {item.unit && (
-                <div className="mb-3">
-                  <button 
-                    onClick={() => { setSearchQuery(item.unit!); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                    className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors"
-                    title={`${item.unit}のコスプレで絞り込む`}
-                  >
-                    👑 {item.unit}
-                  </button>
-                </div>
-              )}
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
-                {item.matchedChars && item.matchedChars.length > 0 ? (
-                  item.matchedChars.map((char: any, i: number) => (
-                    <div key={i} className="flex items-center gap-1.5">
-                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: char.color }}></div>
-                      <button 
-                        onClick={() => { setSearchQuery(char.name); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                        className="font-bold text-gray-900 hover:text-blue-600 transition-colors text-left text-base"
-                        title={`${char.name}のコスプレで絞り込む`}
-                      >
-                        {char.name}
-                      </button>
+              {item.unit ? (
+                <>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <div className="flex -space-x-1">
+                      {item.matchedChars && item.matchedChars.map((char: any, i: number) => (
+                        <div key={i} className="w-3.5 h-3.5 rounded-full border border-white" style={{ backgroundColor: char.color }} title={char.name}></div>
+                      ))}
                     </div>
-                  ))
-                ) : (
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }}></div>
                     <button 
-                      onClick={() => { setSearchQuery(item.member); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                      className="font-bold text-gray-900 hover:text-blue-600 transition-colors text-left text-base"
-                      title={`${item.member}のコスプレで絞り込む`}
+                      onClick={() => { setSearchQuery(item.unit!); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                      className="font-bold text-xl text-gray-900 hover:text-purple-600 transition-colors line-clamp-1 text-left"
+                      title={`${item.unit}のコスプレで絞り込む`}
                     >
-                      {item.member}
+                      👑 {item.unit}
                     </button>
                   </div>
-                )}
-              </div>
+                  {/* 個人名も小さく表示して検索できるようにする */}
+                  {item.matchedChars && item.matchedChars.length > 0 && (
+                    <div className="flex flex-wrap gap-x-2 gap-y-1 mb-3 pl-1">
+                      {item.matchedChars.map((char: any, i: number) => (
+                        <button 
+                          key={i}
+                          onClick={() => { setSearchQuery(char.name); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                          className="text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                        >
+                          #{char.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
+                  {item.matchedChars && item.matchedChars.length > 0 ? (
+                    item.matchedChars.map((char: any, i: number) => (
+                      <div key={i} className="flex items-center gap-1.5">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: char.color }}></div>
+                        <button 
+                          onClick={() => { setSearchQuery(char.name); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                          className="font-bold text-xl text-gray-900 hover:text-blue-600 transition-colors text-left"
+                          title={`${char.name}のコスプレで絞り込む`}
+                        >
+                          {char.name}
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
+                      <button 
+                        onClick={() => { setSearchQuery(item.member); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                        className="font-bold text-xl text-gray-900 hover:text-blue-600 transition-colors text-left"
+                        title={`${item.member}のコスプレで絞り込む`}
+                      >
+                        {item.member}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
               <p className="text-sm text-gray-500 mb-5 line-clamp-1">
                 Cosplayer: 
                 <button 
