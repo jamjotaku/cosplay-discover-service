@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 export default function AddCosplayPage() {
@@ -10,11 +10,28 @@ export default function AddCosplayPage() {
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
 
-  // 編集用の状態
   const [editCharacter, setEditCharacter] = useState("");
   const [editCosplayer, setEditCosplayer] = useState("");
   const [editAgency, setEditAgency] = useState("");
   const [editUnit, setEditUnit] = useState("");
+
+  // サジェスト用のレイヤー名リスト
+  const [knownCosplayers, setKnownCosplayers] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchCosplayers = async () => {
+      try {
+        const res = await fetch("/api/cosplay/cosplayers");
+        const data = await res.json();
+        if (data.cosplayers) {
+          setKnownCosplayers(data.cosplayers);
+        }
+      } catch (err) {
+        console.error("サジェストデータの取得に失敗しました", err);
+      }
+    };
+    fetchCosplayers();
+  }, []);
 
   const handleAnalyze = async () => {
     if (!url) return;
@@ -34,11 +51,10 @@ export default function AddCosplayPage() {
         throw new Error(data.error || "エラーが発生しました");
       }
       setResult(data);
-      // 初期値をセット
       setEditCharacter(data.analysis.character || "");
       setEditCosplayer(data.tweet.author || "");
       setEditAgency(data.analysis.agency || "");
-      setEditUnit(""); // 分析時は一旦空にするか、AIに推測させることも可能
+      setEditUnit(""); 
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -77,6 +93,11 @@ export default function AddCosplayPage() {
       setEditCosplayer("");
       setEditAgency("");
       setEditUnit("");
+      
+      // 新しい名前を追加したかもしれないのでサジェスト更新
+      if (!knownCosplayers.includes(editCosplayer)) {
+        setKnownCosplayers(prev => [...prev, editCosplayer].sort());
+      }
     } catch (err: any) {
       alert('エラーが発生しました: ' + err.message);
     } finally {
@@ -94,7 +115,7 @@ export default function AddCosplayPage() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-10">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">コスプレ写真を追加</h1>
           <p className="text-gray-500 mb-8">
-            X(Twitter)の画像付きツイートのURLを貼り付けるだけで、ローカルのVTuber辞書（252名）と高速照合してキャラクター名を特定します。
+            X(Twitter)の画像付きツイートのURLを貼り付けるだけで、ローカルのVTuber辞書と高速照合してキャラクター名を特定します。
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -175,9 +196,20 @@ export default function AddCosplayPage() {
                       type="text"
                       value={editCosplayer}
                       onChange={(e) => setEditCosplayer(e.target.value)}
+                      list="cosplayer-list"
                       className="w-full text-gray-900 bg-white px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                     />
-                    <p className="text-xs text-gray-400 mt-1">Xアカウント名: @{result.tweet.screenName}</p>
+                    <datalist id="cosplayer-list">
+                      {knownCosplayers.map((name, i) => (
+                        <option key={i} value={name} />
+                      ))}
+                    </datalist>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Xアカウント名: @{result.tweet.screenName}
+                    </p>
+                    <p className="text-[10px] text-blue-500 mt-1 font-medium">
+                      ※入力欄をタップすると過去に登録された名前がサジェストされます。表記揺れを防ぐため同じ人は同じ名前を選択してください。
+                    </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-500 mb-1">ツイート本文</label>
@@ -191,7 +223,7 @@ export default function AddCosplayPage() {
                     disabled={saving}
                     className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-4 px-4 rounded-xl mt-6 shadow-md transition-all transform hover:-translate-y-1"
                   >
-                    {saving ? "保存中..." : "この内容でスプレッドシートに登録"}
+                    {saving ? "保存中..." : "この内容でデータベースに登録"}
                   </button>
                 </div>
               </div>
