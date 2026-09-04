@@ -3,39 +3,24 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import dictionary from "@/data/vtuber_dictionary.json";
 import { supabase } from "@/lib/supabase";
-import { User } from "@supabase/supabase-js";
-
-type CosplayData = {
-  member: string;
-  cosplayer: string;
-  image: string;
-  link: string;
-  unit?: string;
-  [key: string]: any;
-};
 
 type Agency = "All" | "Hololive" | "Nijisanji" | "VSPO" | "Favorites";
 
-export default function CosplayGallery({ data }: { data: CosplayData[] }) {
+export default function CosplayGallery() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeAgency, setActiveAgency] = useState<Agency>("All");
   const [sortOrder, setSortOrder] = useState<"Random" | "Default" | "Debut">("Random");
   
-  // 無限スクロール用の状態
-  const [displayCount, setDisplayCount] = useState(30);
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  
+  // セッションごとのランダムシード（0〜1）
+  const [randomSeed] = useState(() => Math.random());
 
   // Auth & Favorites state
   const [user, setUser] = useState<{ id: string; nickname: string } | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
-
-  // デビュー順（辞書内の並び順）を記録したマップ
-  const debutOrderMap = useMemo(() => {
-    const map = new Map<string, number>();
-    dictionary.forEach((item, index) => {
-      map.set(item.name, index);
-    });
-    return map;
-  }, []);
 
   // ログイン状態とFavoritesの同期
   const syncAuth = () => {
@@ -52,31 +37,8 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
 
   useEffect(() => {
     syncAuth();
-    // AuthHeaderからのログイン/ログアウト通知を受け取る
     window.addEventListener("auth_changed", syncAuth);
     return () => window.removeEventListener("auth_changed", syncAuth);
-  }, []);
-
-  // 検索やソートが変わったら表示件数をリセット
-  useEffect(() => {
-    setDisplayCount(30);
-  }, [searchQuery, activeAgency, sortOrder]);
-
-  // 無限スクロールの監視（useCallback Refで安全に実装）
-  const observer = useRef<IntersectionObserver | null>(null);
-  const observerTarget = useCallback((node: HTMLDivElement | null) => {
-    if (observer.current) observer.current.disconnect();
-    if (node) {
-      observer.current = new IntersectionObserver(
-        entries => {
-          if (entries[0].isIntersecting) {
-            setDisplayCount(prev => prev + 30);
-          }
-        },
-        { rootMargin: "600px" } // 大きめにマージンを取る
-      );
-      observer.current.observe(node);
-    }
   }, []);
 
   const fetchFavorites = async (userId: string) => {
@@ -116,67 +78,111 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
     }
   };
 
-  // Enhance data with agency and color from the dictionary
-  const enhancedData = useMemo(() => {
-    return data.map(item => {
-      // 複数人（併せ）に対応するため、文字列に含まれるすべてのキャラを抽出
-      const matchedChars = dictionary.filter(d => 
-        d.name === item.member || (item.member && item.member.includes(d.name))
-      );
-      
-      const primaryChar = matchedChars.length > 0 ? matchedChars[0] : null;
-
-      return {
-        ...item,
-        agency: primaryChar ? primaryChar.agency as Agency : "Unknown",
-        color: primaryChar ? primaryChar.color : "#9ca3af", // Default gray
-        matchedChars: matchedChars, // 抽出した全キャラ情報を保持
-        _randomSortValue: Math.random() // セッションごとの固定ランダム値
-      };
-    });
-  }, [data]);
-
-  // Filter and Sort data
-  const filteredAndSortedData = useMemo(() => {
-    // 1. フィルター処理
-    let result = enhancedData.filter((item) => {
-      // Agency / Favorites filter
-      if (activeAgency === "Favorites") {
-        if (!favorites.has(item.link)) return false;
-      } else if (activeAgency !== "All" && item.agency !== activeAgency) {
-        return false;
+  const fetchCosplays = async (isLoadMore = false) => {
+    if (loading) return;
+    setLoading(true);
+    
+    const currentOffset = isLoadMore ? items.length : 0;
+    
+    if (activeAgency === "Favorites") {
+      const favArray = Array.from(favorites);
+      if (favArray.length === 0) {
+        setItems([]);
+        setHasMore(false);
+        setLoading(false);
+        return;
       }
       
-      // Text search filter
+      let query = supabase
+        .from('cosplay_items')
+        .select('*')
+        .in('tweet_url', favArray)
+        .eq('status', 'active');
+        
       if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
-        const matchesMember = item.member && item.member.toLowerCase().includes(query);
-        const matchesCosplayer = item.cosplayer && item.cosplayer.toLowerCase().includes(query);
-        const matchesUnit = item.unit && item.unit.toLowerCase().includes(query);
-        if (!matchesMember && !matchesCosplayer && !matchesUnit) {
-          return false;
-        }
+        const q = `%${searchQuery.trim()}%`;
+        query = query.or(`cosplayer.ilike.${q},unit.ilike.${q},member.ilike.${q},tags.cs.{${searchQuery.trim()}}`);
       }
       
-      return true;
-    });
-
-    // 2. ソート処理
-    if (sortOrder === "Random") {
-      result.sort((a, b) => a._randomSortValue - b._randomSortValue);
-    } else if (sortOrder === "Debut") {
-      result.sort((a, b) => {
-        // 辞書に存在しない場合は一番後ろ（999999）にする
-        const orderA = debutOrderMap.has(a.member) ? debutOrderMap.get(a.member)! : 999999;
-        const orderB = debutOrderMap.has(b.member) ? debutOrderMap.get(b.member)! : 999999;
-        return orderA - orderB;
-      });
+      if (sortOrder === "Debut") query = query.order('debut_order', { ascending: true, nullsFirst: false });
+      else if (sortOrder === "Default") query = query.order('created_at', { ascending: false });
+      
+      // Favoritesは最大1000件を一括取得してクライアント側でシャッフル（件数が限られているため）
+      query = query.limit(1000);
+      
+      const { data, error } = await query;
+      if (data) {
+        let sorted = [...data];
+        if (sortOrder === "Random") {
+          sorted.sort(() => Math.random() - 0.5); // お気に入りのランダムは簡易シャッフル
+        }
+        setItems(sorted);
+        setHasMore(false);
+      }
+      setLoading(false);
+      return;
     }
 
-    return result;
-  }, [enhancedData, searchQuery, activeAgency, favorites, sortOrder, debutOrderMap]);
+    // 通常のRPCフェッチ（完全に重複しないランダムページネーション）
+    const { data, error } = await supabase.rpc('get_cosplays', {
+      p_sort_type: sortOrder.toLowerCase(),
+      p_seed: randomSeed,
+      p_agency: activeAgency === "All" ? null : activeAgency,
+      p_search: searchQuery.trim() || null,
+      p_limit: 30,
+      p_offset: currentOffset
+    });
 
-  const displayedData = filteredAndSortedData.slice(0, displayCount);
+    if (data) {
+      if (isLoadMore) {
+        setItems(prev => [...prev, ...data]);
+      } else {
+        setItems(data);
+      }
+      setHasMore(data.length === 30);
+    }
+    setLoading(false);
+  };
+
+  // 検索条件が変わったらリセットして再取得
+  useEffect(() => {
+    setItems([]);
+    setHasMore(true);
+    fetchCosplays(false);
+  }, [searchQuery, activeAgency, sortOrder]);
+
+  // 無限スクロールの監視
+  const observer = useRef<IntersectionObserver | null>(null);
+  const observerTarget = useCallback((node: HTMLDivElement | null) => {
+    if (loading || !hasMore) return;
+    if (observer.current) observer.current.disconnect();
+    if (node) {
+      observer.current = new IntersectionObserver(
+        entries => {
+          if (entries[0].isIntersecting) {
+            fetchCosplays(true);
+          }
+        },
+        { rootMargin: "600px" }
+      );
+      observer.current.observe(node);
+    }
+  }, [loading, hasMore]);
+
+  // 取得したデータをUI表示用に整形
+  const displayedData = useMemo(() => {
+    return items.map(item => {
+      // Supabaseのtags（文字列配列）から、辞書の詳細データを復元する
+      const matchedChars = (item.tags || []).map((t: string) => dictionary.find(d => d.name === t)).filter(Boolean);
+      return {
+        ...item,
+        image: item.image_url, // UIコンポーネント側のプロパティ名に合わせる
+        link: item.tweet_url,
+        matchedChars: matchedChars,
+        color: matchedChars.length > 0 ? matchedChars[0].color : "#9ca3af",
+      };
+    });
+  }, [items]);
 
   return (
     <div>
@@ -205,228 +211,215 @@ export default function CosplayGallery({ data }: { data: CosplayData[] }) {
       <div className="flex flex-wrap justify-center gap-2 mb-10">
         <button
           onClick={() => setActiveAgency("All")}
-          className={`px-5 py-2.5 rounded-full font-medium transition-colors ${
-            activeAgency === "All" ? "bg-gray-800 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          className={`px-6 py-2.5 rounded-full font-bold transition-all shadow-sm ${
+            activeAgency === "All" ? "bg-gray-800 text-white" : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
           }`}
         >
-          すべて
+          すべて ({activeAgency === "All" && displayedData.length > 0 ? "..." : "ALL"})
         </button>
         <button
           onClick={() => setActiveAgency("Hololive")}
-          className={`px-5 py-2.5 rounded-full font-medium transition-colors ${
-            activeAgency === "Hololive" ? "bg-[#56B5D7] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          className={`px-6 py-2.5 rounded-full font-bold transition-all shadow-sm ${
+            activeAgency === "Hololive" ? "bg-blue-400 text-white" : "bg-white text-gray-600 hover:bg-blue-50 border border-gray-200"
           }`}
         >
           ホロライブ
         </button>
         <button
           onClick={() => setActiveAgency("Nijisanji")}
-          className={`px-5 py-2.5 rounded-full font-medium transition-colors ${
-            activeAgency === "Nijisanji" ? "bg-[#2C2C2C] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          className={`px-6 py-2.5 rounded-full font-bold transition-all shadow-sm ${
+            activeAgency === "Nijisanji" ? "bg-gray-900 text-white" : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
           }`}
         >
           にじさんじ
         </button>
         <button
           onClick={() => setActiveAgency("VSPO")}
-          className={`px-5 py-2.5 rounded-full font-medium transition-colors ${
-            activeAgency === "VSPO" ? "bg-[#A5C1E7] text-gray-900" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          className={`px-6 py-2.5 rounded-full font-bold transition-all shadow-sm ${
+            activeAgency === "VSPO" ? "bg-indigo-500 text-white" : "bg-white text-gray-600 hover:bg-indigo-50 border border-gray-200"
           }`}
         >
           ぶいすぽっ！
         </button>
-        {user && (
-          <button
-            onClick={() => setActiveAgency("Favorites")}
-            className={`px-5 py-2.5 rounded-full font-bold transition-colors shadow-sm ${
-              activeAgency === "Favorites" ? "bg-pink-500 text-white" : "bg-pink-50 text-pink-500 hover:bg-pink-100"
-            }`}
-          >
-            💖 自分の推し
-          </button>
-        )}
+        <button
+          onClick={() => setActiveAgency("Favorites")}
+          className={`px-6 py-2.5 rounded-full font-bold transition-all shadow-sm flex items-center gap-2 ${
+            activeAgency === "Favorites" ? "bg-pink-500 text-white" : "bg-white text-pink-500 hover:bg-pink-50 border border-pink-200"
+          }`}
+        >
+          <svg className="w-5 h-5" fill={activeAgency === "Favorites" ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+          推し
+        </button>
       </div>
 
-      {/* 並び替えトグル */}
-      <div className="flex justify-center mb-8">
-        <div className="inline-flex items-center space-x-1 bg-white rounded-full p-1.5 border border-gray-200 shadow-sm">
+      {/* 並び順トグル */}
+      <div className="flex justify-end mb-6">
+        <div className="inline-flex bg-white rounded-lg p-1 shadow-sm border border-gray-200">
           <button
             onClick={() => setSortOrder("Random")}
-            className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${
-              sortOrder === "Random" 
-                ? "bg-blue-50 text-blue-700 shadow-sm" 
-                : "text-gray-500 hover:text-gray-700"
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              sortOrder === "Random" ? "bg-gray-100 text-gray-900" : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            ランダム
+            🎲 ランダム
           </button>
           <button
             onClick={() => setSortOrder("Default")}
-            className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${
-              sortOrder === "Default" 
-                ? "bg-blue-50 text-blue-700 shadow-sm" 
-                : "text-gray-500 hover:text-gray-700"
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              sortOrder === "Default" ? "bg-gray-100 text-gray-900" : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            追加順
+            🕒 追加順
           </button>
           <button
             onClick={() => setSortOrder("Debut")}
-            className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${
-              sortOrder === "Debut" 
-                ? "bg-blue-50 text-blue-700 shadow-sm" 
-                : "text-gray-500 hover:text-gray-700"
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              sortOrder === "Debut" ? "bg-gray-100 text-gray-900" : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            デビュー順
+            🌟 デビュー順
           </button>
         </div>
       </div>
 
-      <p className="text-sm text-gray-500 mb-6 text-center">
-        全 {enhancedData.length} 件中 {filteredAndSortedData.length} 件を表示
-      </p>
-
       {/* ギャラリー */}
-      <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6 md:gap-8 space-y-6 md:space-y-8">
+      <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
         {displayedData.map((item, index) => {
-          const isFav = favorites.has(item.link);
+          const isFavorite = favorites.has(item.link);
+          
           return (
-          <div key={index} className="break-inside-avoid bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-            <div className="relative bg-gray-100 group min-h-[200px]">
-              {item.image ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
-                  src={item.image}
-                  alt={`${item.cosplayer} - ${item.member}`}
-                  className="w-full h-auto object-cover"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-400">
-                  No Image
-                </div>
-              )}
-              
-              {/* いいねボタン */}
-              <button 
+            <div key={item.id || index} className="break-inside-avoid bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 group">
+              {/* お気に入りボタン */}
+              <button
                 onClick={() => toggleFavorite(item.link)}
-                className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 transition-transform"
+                className="absolute top-4 right-4 z-10 p-2.5 rounded-full bg-white/80 backdrop-blur-sm shadow-md hover:scale-110 transition-transform opacity-0 group-hover:opacity-100 sm:opacity-100"
               >
-                <svg className={`w-6 h-6 ${isFav ? 'text-pink-500 fill-current' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg 
+                  className={`w-6 h-6 ${isFavorite ? 'text-pink-500' : 'text-gray-400'}`} 
+                  fill={isFavorite ? "currentColor" : "none"} 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
               </button>
-            </div>
-            <div className="p-5">
-              {item.unit ? (
-                <>
-                  <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                    <button 
-                      onClick={() => { setSearchQuery(item.unit!); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                      className="font-bold text-xl text-gray-900 hover:text-purple-600 transition-colors text-left"
-                      title={`${item.unit}のコスプレで絞り込む`}
-                    >
-                      👑 {item.unit}
-                    </button>
-                    <div className="flex -space-x-1 items-center">
-                      {item.matchedChars && item.matchedChars.slice(0, 5).map((char: any, i: number) => (
-                        <div key={i} className="w-3.5 h-3.5 rounded-full border border-white z-0" style={{ backgroundColor: char.color }} title={char.name}></div>
-                      ))}
-                      {item.matchedChars && item.matchedChars.length > 5 && (
-                        <div className="w-6 h-3.5 rounded-full border border-white bg-gray-100 flex items-center justify-center text-[9px] font-bold text-gray-600 z-10 -ml-1">
-                          +{item.matchedChars.length - 5}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  {/* 個人名も小さく表示して検索できるようにする */}
-                  {item.matchedChars && item.matchedChars.length > 0 && (
-                    <div className="flex flex-wrap gap-x-2 gap-y-1 mb-3 pl-1 max-h-[80px] overflow-y-auto">
-                      {item.matchedChars.map((char: any, i: number) => (
-                        <button 
-                          key={i}
-                          onClick={() => { setSearchQuery(char.name); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                          className="text-xs text-gray-500 hover:text-blue-600 transition-colors"
-                        >
-                          #{char.name}
-                        </button>
-                      ))}
+
+              <div className="relative min-h-[200px] bg-gray-100">
+                <a href={item.link} target="_blank" rel="noopener noreferrer" className="block">
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt={`${item.cosplayer} - ${item.member}`}
+                      className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                      <span className="text-gray-400">No Image</span>
                     </div>
                   )}
-                </>
-              ) : (
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
-                  {item.matchedChars && item.matchedChars.length > 0 ? (
-                    item.matchedChars.map((char: any, i: number) => (
-                      <div key={i} className="flex items-center gap-1.5">
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: char.color }}></div>
+                </a>
+              </div>
+
+              <div className="p-5">
+                {item.unit ? (
+                  <>
+                    <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                      <button 
+                        onClick={() => { setSearchQuery(item.unit!); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                        className="font-bold text-xl text-gray-900 hover:text-purple-600 transition-colors text-left"
+                        title={`${item.unit}のコスプレで絞り込む`}
+                      >
+                        👑 {item.unit}
+                      </button>
+                      <div className="flex -space-x-1 items-center">
+                        {item.matchedChars && item.matchedChars.slice(0, 5).map((char: any, i: number) => (
+                          <div key={i} className="w-3.5 h-3.5 rounded-full border border-white z-0" style={{ backgroundColor: char.color }} title={char.name}></div>
+                        ))}
+                        {item.matchedChars && item.matchedChars.length > 5 && (
+                          <div className="w-6 h-3.5 rounded-full border border-white bg-gray-100 flex items-center justify-center text-[9px] font-bold text-gray-600 z-10 -ml-1">
+                            +{item.matchedChars.length - 5}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {/* 個人名も小さく表示して検索できるようにする */}
+                    {item.matchedChars && item.matchedChars.length > 0 && (
+                      <div className="flex flex-wrap gap-x-2 gap-y-1 mb-3 pl-1 max-h-[80px] overflow-y-auto">
+                        {item.matchedChars.map((char: any, i: number) => (
+                          <button 
+                            key={i}
+                            onClick={() => { setSearchQuery(char.name); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                            className="text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                          >
+                            #{char.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
+                    {item.matchedChars && item.matchedChars.length > 0 ? (
+                      item.matchedChars.map((char: any, i: number) => (
+                        <div key={i} className="flex items-center gap-1.5">
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: char.color }}></div>
+                          <button 
+                            onClick={() => { setSearchQuery(char.name); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                            className="font-bold text-xl text-gray-900 hover:text-blue-600 transition-colors text-left"
+                            title={`${char.name}のコスプレで絞り込む`}
+                          >
+                            {char.name}
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
                         <button 
-                          onClick={() => { setSearchQuery(char.name); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                          onClick={() => { setSearchQuery(item.member); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                           className="font-bold text-xl text-gray-900 hover:text-blue-600 transition-colors text-left"
-                          title={`${char.name}のコスプレで絞り込む`}
+                          title={`${item.member}のコスプレで絞り込む`}
                         >
-                          {char.name}
+                          {item.member}
                         </button>
                       </div>
-                    ))
-                  ) : (
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
-                      <button 
-                        onClick={() => { setSearchQuery(item.member); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                        className="font-bold text-xl text-gray-900 hover:text-blue-600 transition-colors text-left"
-                        title={`${item.member}のコスプレで絞り込む`}
-                      >
-                        {item.member}
-                      </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
+                )}
+                
+                <div className="flex items-center gap-2 text-gray-600 mt-4 border-t pt-4">
+                  <span className="text-sm font-medium">Cosplayer:</span>
+                  <span className="font-bold">{item.cosplayer}</span>
                 </div>
-              )}
-              <p className="text-sm text-gray-500 mb-5 line-clamp-1">
-                Cosplayer: 
-                <button 
-                  onClick={() => { setSearchQuery(item.cosplayer); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  className="text-gray-700 font-medium hover:text-blue-600 hover:underline transition-all ml-1"
-                  title={`${item.cosplayer}さんの他のコスプレを見る`}
-                >
-                  {item.cosplayer}
-                </button>
-              </p>
-              {item.link ? (
-                <a 
-                  href={item.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full text-center hover:opacity-90 text-white font-medium py-2.5 px-4 rounded-xl transition-opacity text-sm"
-                  style={{ backgroundColor: item.color === '#ffffff' ? '#000000' : item.color, color: item.color === '#ffffff' ? 'white' : 'white', textShadow: '0px 1px 2px rgba(0,0,0,0.5)' }}
-                >
-                  X(Twitter)で見る
-                </a>
-              ) : (
-                <button disabled className="block w-full text-center bg-gray-100 text-gray-400 font-medium py-2.5 px-4 rounded-xl text-sm">
-                  リンクなし
-                </button>
-              )}
+                
+                <div className="mt-4">
+                  <a 
+                    href={item.link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block w-full py-2.5 px-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold text-center rounded-xl transition-colors"
+                  >
+                    X(Twitter)で見る
+                  </a>
+                </div>
+              </div>
             </div>
-          </div>
           );
         })}
       </div>
 
-      {/* 無限スクロール検知用の透明な要素 */}
-      {displayCount < filteredAndSortedData.length && (
-        <div ref={observerTarget} className="w-full h-20 flex items-center justify-center mt-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      {loading && (
+        <div className="text-center py-10">
+          <div className="inline-block animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+          <p className="mt-2 text-gray-500 font-medium">読み込み中...</p>
         </div>
       )}
 
-      {filteredAndSortedData.length === 0 && (
-        <div className="text-center text-gray-500 py-20">
-          「{searchQuery}」に一致するコスプレ写真が見つかりませんでした。
-        </div>
-      )}
+      {/* スクロール監視用の空要素 */}
+      <div ref={observerTarget} className="h-20 w-full"></div>
     </div>
   );
 }

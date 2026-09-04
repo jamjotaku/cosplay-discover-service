@@ -57,13 +57,26 @@ export default function AddCosplayPage() {
         link: url,
         unit: editUnit
       };
-      const qs = new URLSearchParams(payload).toString();
-      const gasUrl = `https://script.google.com/macros/s/AKfycbza9LCslkHwa9Vbtmy6dGBAe14C6c_0S4pg_-D65kuCMfFH4W_V9MCvGh106Pr_m4qI/exec?${qs}`;
       
-      await fetch(gasUrl, { mode: 'no-cors' });
-      alert('スプレッドシートに登録しました！');
+      const res = await fetch('/api/cosplay/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      const responseData = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(responseData.error || '保存に失敗しました');
+      }
+
+      alert('データベースに登録しました！');
       setUrl("");
       setResult(null);
+      setEditCharacter("");
+      setEditCosplayer("");
+      setEditAgency("");
+      setEditUnit("");
     } catch (err: any) {
       alert('エラーが発生しました: ' + err.message);
     } finally {
