@@ -1,0 +1,28 @@
+name: Check Dead Links
+
+on:
+  schedule:
+    # 毎日UTC 18:00 (日本時間 午前3時) に実行
+    - cron: '0 18 * * *'
+  workflow_dispatch: # 手動実行用
+
+jobs:
+  check_dead_links:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install @supabase/supabase-js dotenv
+
+      - name: Run script
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: node scripts/check_dead_links.js
