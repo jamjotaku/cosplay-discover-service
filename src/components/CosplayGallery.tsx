@@ -3,10 +3,11 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import dictionary from "@/data/vtuber_dictionary.json";
 import { supabase } from "@/lib/supabase";
+import Link from "next/link";
 
 type Agency = "All" | "Hololive" | "Nijisanji" | "VSPO" | "Favorites";
 
-export default function CosplayGallery() {
+export default function CosplayGallery({ fixedCosplayer }: { fixedCosplayer?: string }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeAgency, setActiveAgency] = useState<Agency>("All");
   const [sortOrder, setSortOrder] = useState<"Random" | "Default" | "Debut">("Random");
@@ -84,20 +85,26 @@ export default function CosplayGallery() {
     
     const currentOffset = isLoadMore ? items.length : 0;
     
-    if (activeAgency === "Favorites") {
-      const favArray = Array.from(favorites);
-      if (favArray.length === 0) {
-        setItems([]);
-        setHasMore(false);
-        setLoading(false);
-        return;
-      }
+    // 1. レイヤー固定モード or お気に入りモード の場合 (RPCを使わずに直接取得)
+    if (fixedCosplayer || activeAgency === "Favorites") {
       
       let query = supabase
         .from('cosplay_items')
         .select('*')
-        .in('tweet_url', favArray)
         .eq('status', 'active');
+        
+      if (fixedCosplayer) {
+        query = query.eq('cosplayer', fixedCosplayer);
+      } else if (activeAgency === "Favorites") {
+        const favArray = Array.from(favorites);
+        if (favArray.length === 0) {
+          setItems([]);
+          setHasMore(false);
+          setLoading(false);
+          return;
+        }
+        query = query.in('tweet_url', favArray);
+      }
         
       if (searchQuery.trim()) {
         const q = `%${searchQuery.trim()}%`;
@@ -107,23 +114,23 @@ export default function CosplayGallery() {
       if (sortOrder === "Debut") query = query.order('debut_order', { ascending: true, nullsFirst: false });
       else if (sortOrder === "Default") query = query.order('created_at', { ascending: false });
       
-      // Favoritesは最大1000件を一括取得してクライアント側でシャッフル（件数が限られているため）
+      // クライアント側でシャッフルするため上限1000件を一括取得
       query = query.limit(1000);
       
       const { data, error } = await query;
       if (data) {
         let sorted = [...data];
         if (sortOrder === "Random") {
-          sorted.sort(() => Math.random() - 0.5); // お気に入りのランダムは簡易シャッフル
+          sorted.sort(() => Math.random() - 0.5); // 簡易シャッフル
         }
         setItems(sorted);
-        setHasMore(false);
+        setHasMore(false); // 全件取得するため無限スクロールは停止
       }
       setLoading(false);
       return;
     }
 
-    // 通常のRPCフェッチ（完全に重複しないランダムページネーション）
+    // 2. 通常のRPCフェッチ（完全に重複しないランダムページネーション）
     const { data, error } = await supabase.rpc('get_cosplays', {
       p_sort_type: sortOrder.toLowerCase(),
       p_seed: randomSeed,
@@ -149,7 +156,7 @@ export default function CosplayGallery() {
     setItems([]);
     setHasMore(true);
     fetchCosplays(false);
-  }, [searchQuery, activeAgency, sortOrder]);
+  }, [searchQuery, activeAgency, sortOrder, fixedCosplayer]);
 
   // 無限スクロールの監視
   const observer = useRef<IntersectionObserver | null>(null);
@@ -172,11 +179,10 @@ export default function CosplayGallery() {
   // 取得したデータをUI表示用に整形
   const displayedData = useMemo(() => {
     return items.map(item => {
-      // Supabaseのtags（文字列配列）から、辞書の詳細データを復元する
       const matchedChars = (item.tags || []).map((t: string) => dictionary.find(d => d.name === t)).filter(Boolean);
       return {
         ...item,
-        image: item.image_url, // UIコンポーネント側のプロパティ名に合わせる
+        image: item.image_url,
         link: item.tweet_url,
         matchedChars: matchedChars,
         color: matchedChars.length > 0 ? matchedChars[0].color : "#9ca3af",
@@ -186,98 +192,65 @@ export default function CosplayGallery() {
 
   return (
     <div>
-      {/* 検索バー */}
-      <div className="mb-8 max-w-2xl mx-auto">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="キャラクター名やレイヤー名で検索..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-5 py-4 pl-12 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm text-lg text-gray-800 bg-white"
-          />
-          <svg
-            className="absolute left-4 top-4 h-6 w-6 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
-      </div>
+      {/* 検索バー・事務所タブ (レイヤー固定モードでは非表示) */}
+      {!fixedCosplayer && (
+        <>
+          <div className="mb-8 max-w-2xl mx-auto">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="キャラクター名やレイヤー名で検索..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-5 py-4 pl-12 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm text-lg text-gray-800 bg-white"
+              />
+              <svg className="absolute left-4 top-4 h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
 
-      {/* 事務所タブ */}
-      <div className="flex flex-wrap justify-center gap-2 mb-10">
-        <button
-          onClick={() => setActiveAgency("All")}
-          className={`px-6 py-2.5 rounded-full font-bold transition-all shadow-sm ${
-            activeAgency === "All" ? "bg-gray-800 text-white" : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
-          }`}
-        >
-          すべて ({activeAgency === "All" && displayedData.length > 0 ? "..." : "ALL"})
-        </button>
-        <button
-          onClick={() => setActiveAgency("Hololive")}
-          className={`px-6 py-2.5 rounded-full font-bold transition-all shadow-sm ${
-            activeAgency === "Hololive" ? "bg-blue-400 text-white" : "bg-white text-gray-600 hover:bg-blue-50 border border-gray-200"
-          }`}
-        >
-          ホロライブ
-        </button>
-        <button
-          onClick={() => setActiveAgency("Nijisanji")}
-          className={`px-6 py-2.5 rounded-full font-bold transition-all shadow-sm ${
-            activeAgency === "Nijisanji" ? "bg-gray-900 text-white" : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
-          }`}
-        >
-          にじさんじ
-        </button>
-        <button
-          onClick={() => setActiveAgency("VSPO")}
-          className={`px-6 py-2.5 rounded-full font-bold transition-all shadow-sm ${
-            activeAgency === "VSPO" ? "bg-indigo-500 text-white" : "bg-white text-gray-600 hover:bg-indigo-50 border border-gray-200"
-          }`}
-        >
-          ぶいすぽっ！
-        </button>
-        <button
-          onClick={() => setActiveAgency("Favorites")}
-          className={`px-6 py-2.5 rounded-full font-bold transition-all shadow-sm flex items-center gap-2 ${
-            activeAgency === "Favorites" ? "bg-pink-500 text-white" : "bg-white text-pink-500 hover:bg-pink-50 border border-pink-200"
-          }`}
-        >
-          <svg className="w-5 h-5" fill={activeAgency === "Favorites" ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-          推し
-        </button>
-      </div>
+          <div className="flex flex-wrap justify-center gap-2 mb-10">
+            <button onClick={() => setActiveAgency("All")} className={`px-6 py-2.5 rounded-full font-bold transition-all shadow-sm ${activeAgency === "All" ? "bg-gray-800 text-white" : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"}`}>
+              すべて ({activeAgency === "All" && displayedData.length > 0 ? "..." : "ALL"})
+            </button>
+            <button onClick={() => setActiveAgency("Hololive")} className={`px-6 py-2.5 rounded-full font-bold transition-all shadow-sm ${activeAgency === "Hololive" ? "bg-blue-400 text-white" : "bg-white text-gray-600 hover:bg-blue-50 border border-gray-200"}`}>
+              ホロライブ
+            </button>
+            <button onClick={() => setActiveAgency("Nijisanji")} className={`px-6 py-2.5 rounded-full font-bold transition-all shadow-sm ${activeAgency === "Nijisanji" ? "bg-gray-900 text-white" : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"}`}>
+              にじさんじ
+            </button>
+            <button onClick={() => setActiveAgency("VSPO")} className={`px-6 py-2.5 rounded-full font-bold transition-all shadow-sm ${activeAgency === "VSPO" ? "bg-indigo-500 text-white" : "bg-white text-gray-600 hover:bg-indigo-50 border border-gray-200"}`}>
+              ぶいすぽっ！
+            </button>
+            <button onClick={() => setActiveAgency("Favorites")} className={`px-6 py-2.5 rounded-full font-bold transition-all shadow-sm flex items-center gap-2 ${activeAgency === "Favorites" ? "bg-pink-500 text-white" : "bg-white text-pink-500 hover:bg-pink-50 border border-pink-200"}`}>
+              <svg className="w-5 h-5" fill={activeAgency === "Favorites" ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              推し
+            </button>
+          </div>
+        </>
+      )}
 
       {/* 並び順トグル */}
       <div className="flex justify-end mb-6">
         <div className="inline-flex bg-white rounded-lg p-1 shadow-sm border border-gray-200">
           <button
             onClick={() => setSortOrder("Random")}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              sortOrder === "Random" ? "bg-gray-100 text-gray-900" : "text-gray-500 hover:text-gray-700"
-            }`}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${sortOrder === "Random" ? "bg-gray-100 text-gray-900" : "text-gray-500 hover:text-gray-700"}`}
           >
             🎲 ランダム
           </button>
           <button
             onClick={() => setSortOrder("Default")}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              sortOrder === "Default" ? "bg-gray-100 text-gray-900" : "text-gray-500 hover:text-gray-700"
-            }`}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${sortOrder === "Default" ? "bg-gray-100 text-gray-900" : "text-gray-500 hover:text-gray-700"}`}
           >
             🕒 追加順
           </button>
           <button
             onClick={() => setSortOrder("Debut")}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              sortOrder === "Debut" ? "bg-gray-100 text-gray-900" : "text-gray-500 hover:text-gray-700"
-            }`}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${sortOrder === "Debut" ? "bg-gray-100 text-gray-900" : "text-gray-500 hover:text-gray-700"}`}
           >
             🌟 デビュー順
           </button>
@@ -296,12 +269,7 @@ export default function CosplayGallery() {
                 onClick={() => toggleFavorite(item.link)}
                 className="absolute top-4 right-4 z-10 p-2.5 rounded-full bg-white/80 backdrop-blur-sm shadow-md hover:scale-110 transition-transform opacity-0 group-hover:opacity-100 sm:opacity-100"
               >
-                <svg 
-                  className={`w-6 h-6 ${isFavorite ? 'text-pink-500' : 'text-gray-400'}`} 
-                  fill={isFavorite ? "currentColor" : "none"} 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
+                <svg className={`w-6 h-6 ${isFavorite ? 'text-pink-500' : 'text-gray-400'}`} fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
               </button>
@@ -309,12 +277,7 @@ export default function CosplayGallery() {
               <div className="relative min-h-[200px] bg-gray-100">
                 <a href={item.link} target="_blank" rel="noopener noreferrer" className="block">
                   {item.image ? (
-                    <img
-                      src={item.image}
-                      alt={`${item.cosplayer} - ${item.member}`}
-                      className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
-                      loading="lazy"
-                    />
+                    <img src={item.image} alt={`${item.cosplayer} - ${item.member}`} className="w-full h-auto object-cover hover:opacity-90 transition-opacity" loading="lazy" />
                   ) : (
                     <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
                       <span className="text-gray-400">No Image</span>
@@ -328,9 +291,8 @@ export default function CosplayGallery() {
                   <>
                     <div className="flex flex-wrap items-center gap-2 mb-1.5">
                       <button 
-                        onClick={() => { setSearchQuery(item.unit!); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                        className="font-bold text-xl text-gray-900 hover:text-purple-600 transition-colors text-left"
-                        title={`${item.unit}のコスプレで絞り込む`}
+                        onClick={() => { if(!fixedCosplayer) { setSearchQuery(item.unit!); window.scrollTo({ top: 0, behavior: 'smooth' }); } }}
+                        className={`font-bold text-xl text-gray-900 transition-colors text-left ${!fixedCosplayer ? 'hover:text-purple-600' : ''}`}
                       >
                         👑 {item.unit}
                       </button>
@@ -345,14 +307,13 @@ export default function CosplayGallery() {
                         )}
                       </div>
                     </div>
-                    {/* 個人名も小さく表示して検索できるようにする */}
                     {item.matchedChars && item.matchedChars.length > 0 && (
                       <div className="flex flex-wrap gap-x-2 gap-y-1 mb-3 pl-1 max-h-[80px] overflow-y-auto">
                         {item.matchedChars.map((char: any, i: number) => (
                           <button 
                             key={i}
-                            onClick={() => { setSearchQuery(char.name); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                            className="text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                            onClick={() => { if(!fixedCosplayer) { setSearchQuery(char.name); window.scrollTo({ top: 0, behavior: 'smooth' }); } }}
+                            className={`text-xs text-gray-500 transition-colors ${!fixedCosplayer ? 'hover:text-blue-600' : ''}`}
                           >
                             #{char.name}
                           </button>
@@ -367,9 +328,8 @@ export default function CosplayGallery() {
                         <div key={i} className="flex items-center gap-1.5">
                           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: char.color }}></div>
                           <button 
-                            onClick={() => { setSearchQuery(char.name); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                            className="font-bold text-xl text-gray-900 hover:text-blue-600 transition-colors text-left"
-                            title={`${char.name}のコスプレで絞り込む`}
+                            onClick={() => { if(!fixedCosplayer) { setSearchQuery(char.name); window.scrollTo({ top: 0, behavior: 'smooth' }); } }}
+                            className={`font-bold text-xl text-gray-900 transition-colors text-left ${!fixedCosplayer ? 'hover:text-blue-600' : ''}`}
                           >
                             {char.name}
                           </button>
@@ -379,9 +339,8 @@ export default function CosplayGallery() {
                       <div className="flex items-center gap-1.5">
                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
                         <button 
-                          onClick={() => { setSearchQuery(item.member); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                          className="font-bold text-xl text-gray-900 hover:text-blue-600 transition-colors text-left"
-                          title={`${item.member}のコスプレで絞り込む`}
+                          onClick={() => { if(!fixedCosplayer) { setSearchQuery(item.member); window.scrollTo({ top: 0, behavior: 'smooth' }); } }}
+                          className={`font-bold text-xl text-gray-900 transition-colors text-left ${!fixedCosplayer ? 'hover:text-blue-600' : ''}`}
                         >
                           {item.member}
                         </button>
@@ -392,16 +351,17 @@ export default function CosplayGallery() {
                 
                 <div className="flex items-center gap-2 text-gray-600 mt-4 border-t pt-4">
                   <span className="text-sm font-medium">Cosplayer:</span>
-                  <span className="font-bold">{item.cosplayer}</span>
+                  {fixedCosplayer ? (
+                    <span className="font-bold text-blue-600">{item.cosplayer}</span>
+                  ) : (
+                    <Link href={`/cosplayer/${encodeURIComponent(item.cosplayer)}`} className="font-bold text-blue-600 hover:underline">
+                      {item.cosplayer}
+                    </Link>
+                  )}
                 </div>
                 
                 <div className="mt-4">
-                  <a 
-                    href={item.link} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="block w-full py-2.5 px-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold text-center rounded-xl transition-colors"
-                  >
+                  <a href={item.link} target="_blank" rel="noopener noreferrer" className="block w-full py-2.5 px-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold text-center rounded-xl transition-colors">
                     X(Twitter)で見る
                   </a>
                 </div>
@@ -411,6 +371,12 @@ export default function CosplayGallery() {
         })}
       </div>
 
+      {!loading && items.length === 0 && fixedCosplayer && (
+        <div className="text-center py-20">
+          <p className="text-xl text-gray-500 font-bold">写真がまだ登録されていません。</p>
+        </div>
+      )}
+
       {loading && (
         <div className="text-center py-10">
           <div className="inline-block animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
@@ -418,7 +384,6 @@ export default function CosplayGallery() {
         </div>
       )}
 
-      {/* スクロール監視用の空要素 */}
       <div ref={observerTarget} className="h-20 w-full"></div>
     </div>
   );
