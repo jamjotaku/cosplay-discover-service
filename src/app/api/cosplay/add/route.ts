@@ -1,10 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import dictionaryData from '@/data/vtuber_dictionary.json';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function POST(request: Request) {
   try {
@@ -45,6 +41,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true });
   } catch (err: any) {
     console.error(err);
-    return NextResponse.json({ error: 'サーバーエラーが発生しました' }, { status: 500 });
+    const errorMessage = err.message || JSON.stringify(err) || '不明なエラー';
+    return NextResponse.json({ error: 'サーバーエラーが発生しました: ' + errorMessage }, { status: 500 });
   }
 }
