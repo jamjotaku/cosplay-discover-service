@@ -17,6 +17,7 @@ export default function AddCosplayPage() {
 
   // サジェスト用のレイヤー名リスト
   const [knownCosplayers, setKnownCosplayers] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
     const fetchCosplayers = async () => {
@@ -105,6 +106,10 @@ export default function AddCosplayPage() {
     }
   };
 
+  const filteredCosplayers = knownCosplayers
+    .filter(name => name.toLowerCase().includes(editCosplayer.toLowerCase()))
+    .slice(0, 50);
+
   return (
     <main className="min-h-screen bg-gray-50 p-4 sm:p-8">
       <div className="max-w-3xl mx-auto">
@@ -190,21 +195,37 @@ export default function AddCosplayPage() {
                       className="w-full text-gray-700 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-                  <div>
+                  <div className="relative">
                     <label className="block text-sm font-medium text-gray-500 mb-1">投稿者（レイヤー名）</label>
                     <input
                       type="text"
                       value={editCosplayer}
                       onChange={(e) => setEditCosplayer(e.target.value)}
-                      list="cosplayer-list"
+                      onFocus={() => setShowSuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                       className="w-full text-gray-900 bg-white px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+                      autoComplete="off"
                     />
-                    <datalist id="cosplayer-list">
-                      {knownCosplayers.map((name, i) => (
-                        <option key={i} value={name} />
-                      ))}
-                    </datalist>
-                    <p className="text-xs text-gray-400 mt-1">
+                    {showSuggestions && (
+                      <ul className="absolute z-10 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {filteredCosplayers.map((name, i) => (
+                          <li
+                            key={i}
+                            onClick={() => {
+                              setEditCosplayer(name);
+                              setShowSuggestions(false);
+                            }}
+                            className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-0"
+                          >
+                            {name}
+                          </li>
+                        ))}
+                        {filteredCosplayers.length === 0 && (
+                          <li className="px-4 py-3 text-sm text-gray-400 italic">候補がありません (新規登録になります)</li>
+                        )}
+                      </ul>
+                    )}
+                    <p className="text-xs text-gray-400 mt-2">
                       Xアカウント名: @{result.tweet.screenName}
                     </p>
                     <p className="text-[10px] text-blue-500 mt-1 font-medium">
