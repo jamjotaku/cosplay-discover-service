@@ -33,6 +33,10 @@ export async function POST(request: Request) {
       return url;
     }) || [];
 
+    if (images.length === 0 && tweet.video && tweet.video.poster) {
+      images.push(tweet.video.poster);
+    }
+
     let character = '不明';
     let series = '不明';
     let agency = '不明';
