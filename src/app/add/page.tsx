@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import dictionaryData from '@/data/vtuber_dictionary.json';
 
 export default function AddCosplayPage() {
   const [url, setUrl] = useState("");
@@ -21,6 +22,7 @@ export default function AddCosplayPage() {
   // サジェスト用のレイヤー名リスト
   const [knownCosplayers, setKnownCosplayers] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showCharSuggestions, setShowCharSuggestions] = useState(false);
 
   useEffect(() => {
     const fetchCosplayers = async () => {
@@ -243,15 +245,45 @@ export default function AddCosplayPage() {
                       placeholder="例: ChroNoiR、miComet など"
                     />
                   </div>
-                  <div>
+                  <div className="relative">
                     <label className="block text-sm font-medium text-gray-500 mb-1">推測されたキャラクター名</label>
                     <input
                       type="text"
                       value={editCharacter}
                       onChange={(e) => setEditCharacter(e.target.value)}
+                      onFocus={() => setShowCharSuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowCharSuggestions(false), 200)}
                       className="w-full font-bold text-lg text-gray-900 bg-white px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                       placeholder="キャラクター名"
+                      autoComplete="off"
                     />
+                    {showCharSuggestions && (
+                      <ul className="absolute z-20 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                        {dictionaryData
+                          .filter(c => c.name.toLowerCase().includes(editCharacter.toLowerCase()))
+                          .slice(0, 50)
+                          .map((c, i) => (
+                          <li
+                            key={i}
+                            onClick={() => {
+                              setEditCharacter(c.name);
+                              setEditAgency(c.agency);
+                              setShowCharSuggestions(false);
+                            }}
+                            className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-0 flex items-center justify-between"
+                          >
+                            <span className="font-bold">{c.name}</span>
+                            <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">{c.agency}</span>
+                          </li>
+                        ))}
+                        {dictionaryData.filter(c => c.name.toLowerCase().includes(editCharacter.toLowerCase())).length === 0 && (
+                          <li className="px-4 py-3 text-sm text-gray-400 italic">候補がありません (手動入力)</li>
+                        )}
+                      </ul>
+                    )}
+                    <p className="text-[10px] text-blue-500 mt-1 font-medium">
+                      ※入力欄をタップすると辞書からキャラクター名がサジェストされます。選択すると事務所も自動入力されます。
+                    </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-500 mb-1">推測された事務所（参考）</label>
