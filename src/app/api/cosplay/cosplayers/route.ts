@@ -10,9 +10,7 @@ export async function GET() {
 
     if (error) throw error;
 
-    const uniqueCosplayers = data.map((d: any) => d.cosplayer);
-
-    return NextResponse.json({ cosplayers: uniqueCosplayers });
+    return NextResponse.json({ cosplayers: data });
   } catch (err: any) {
     console.error(err);
     return NextResponse.json({ error: err.message }, { status: 500 });

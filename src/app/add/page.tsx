@@ -20,7 +20,7 @@ export default function AddCosplayPage() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
 
   // サジェスト用のレイヤー名リスト
-  const [knownCosplayers, setKnownCosplayers] = useState<string[]>([]);
+  const [knownCosplayers, setKnownCosplayers] = useState<{cosplayer: string, x_username: string}[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showCharSuggestions, setShowCharSuggestions] = useState(false);
 
@@ -134,8 +134,11 @@ export default function AddCosplayPage() {
         setEditUnit("");
         setSelectedImages([]);
         
-        if (!knownCosplayers.includes(editCosplayer)) {
-          setKnownCosplayers(prev => [...prev, editCosplayer].sort());
+        if (!knownCosplayers.find(c => c.cosplayer === editCosplayer)) {
+          setKnownCosplayers(prev => {
+            const newList = [...prev, { cosplayer: editCosplayer, x_username: result.tweet.screenName }];
+            return newList.sort((a, b) => a.cosplayer.localeCompare(b.cosplayer));
+          });
         }
       } else {
         throw new Error(errorMessages.join(', '));
@@ -149,7 +152,8 @@ export default function AddCosplayPage() {
   };
 
   const filteredCosplayers = knownCosplayers
-    .filter(name => name.toLowerCase().includes(editCosplayer.toLowerCase()))
+    .filter(c => c.cosplayer.toLowerCase().includes(editCosplayer.toLowerCase()) || 
+                 (c.x_username && c.x_username.toLowerCase().includes(editCosplayer.toLowerCase())))
     .slice(0, 50);
 
   return (
@@ -308,16 +312,17 @@ export default function AddCosplayPage() {
                     />
                     {showSuggestions && (
                       <ul className="absolute z-10 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                        {filteredCosplayers.map((name, i) => (
+                        {filteredCosplayers.map((c, i) => (
                           <li
                             key={i}
                             onClick={() => {
-                              setEditCosplayer(name);
+                              setEditCosplayer(c.cosplayer);
                               setShowSuggestions(false);
                             }}
-                            className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-0"
+                            className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-0 flex items-center justify-between"
                           >
-                            {name}
+                            <span className="font-bold">{c.cosplayer}</span>
+                            {c.x_username && <span className="text-xs text-gray-400 font-mono">@{c.x_username}</span>}
                           </li>
                         ))}
                         {filteredCosplayers.length === 0 && (
