@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import dictionaryData from '@/data/vtuber_dictionary.json';
 
 export async function POST(request: Request) {
   try {
@@ -11,9 +10,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '必須項目が不足しています' }, { status: 400 });
     }
 
+    const { data: dictData, error: dictError } = await supabase
+      .from('vtuber_dictionary')
+      .select('*')
+      .order('created_at', { ascending: true });
+    
+    if (dictError) throw dictError;
+    const dictionaryData = dictData || [];
+
     const matchedChars = dictionaryData.filter((d: any) => d.name === member || (member && member.includes(d.name)));
     const tags = matchedChars.map((d: any) => d.name);
     const agency = matchedChars.length > 0 ? matchedChars[0].agency : null;
+    
     let debut_order = null;
     if (matchedChars.length > 0) {
       debut_order = Math.min(...matchedChars.map((d: any) => dictionaryData.findIndex((x: any) => x.name === d.name)));

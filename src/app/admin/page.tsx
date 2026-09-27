@@ -16,7 +16,7 @@ export default function AdminPage() {
   const [mergeTarget, setMergeTarget] = useState("");
   const [isMerging, setIsMerging] = useState(false);
 
-  // パスワードチェック
+  // パスワードチェチE��
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const res = await fetch("/api/admin/auth", {
@@ -29,7 +29,7 @@ export default function AdminPage() {
       setIsAuthenticated(true);
       fetchItems();
     } else {
-      alert("パスワードが違います");
+      alert("パスワードが違いまぁE);
     }
   };
 
@@ -53,13 +53,13 @@ export default function AdminPage() {
   }, [filterStatus]);
 
   const updateStatus = async (id: string, status: string) => {
-    if (!confirm(`ステータスを ${status} に変更しますか？`)) return;
+    if (!confirm(`スチE�EタスめE${status} に変更しますか�E�`)) return;
     const { error } = await supabase.from("cosplay_items").update({ status }).eq("id", id);
     if (!error) fetchItems();
   };
 
   const deleteItem = async (id: string) => {
-    if (!confirm("データベースから完全に削除します。よろしいですか？")) return;
+    if (!confirm("チE�Eタベ�Eスから完�Eに削除します。よろしぁE��すか�E�E)) return;
     const { error } = await supabase.from("cosplay_items").delete().eq("id", id);
     if (!error) fetchItems();
   };
@@ -85,10 +85,10 @@ export default function AdminPage() {
 
   const handleMerge = async () => {
     if (!mergeSource.trim() || !mergeTarget.trim()) {
-      alert("両方の名前を入力してください");
+      alert("両方の名前を�E力してください");
       return;
     }
-    if (!confirm(`「${mergeSource}」をすべて「${mergeTarget}」に統合しますか？\n元に戻すことはできません。`)) return;
+    if (!confirm(`、E{mergeSource}」をすべて、E{mergeTarget}」に統合しますか�E�\n允E��戻すことはできません。`)) return;
     
     setIsMerging(true);
     const { error } = await supabase
@@ -99,7 +99,7 @@ export default function AdminPage() {
     if (error) {
       alert("統合エラー: " + error.message);
     } else {
-      alert("統合が完了しました！");
+      alert("統合が完亁E��ました�E�E);
       setMergeSource("");
       setMergeTarget("");
       fetchItems();
@@ -123,42 +123,42 @@ export default function AdminPage() {
     <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">管理者ダッシュボード</h1>
-          <Link href="/" className="text-blue-500 hover:underline">ギャラリーに戻る</Link>
+          <h1 className="text-3xl font-bold text-gray-900">管琁E��E��チE��ュボ�EチE/h1>
+          <Link href="/" className="text-blue-500 hover:underline">ギャラリーに戻めE/Link>
         </div>
 
         {/* レイヤー名統合ツール */}
         <div className="bg-white p-6 rounded-2xl shadow-sm mb-6 border border-purple-100">
           <h2 className="text-xl font-bold mb-4 text-purple-900 flex items-center gap-2">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
-            レイヤー名 統合ツール (表記揺れの修正)
+            レイヤー吁E統合ツール (表記揺れ�E修正)
           </h2>
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="flex-1 w-full">
-              <label className="block text-sm text-gray-600 mb-1">間違っている名前 (統合元)</label>
-              <input type="text" value={mergeSource} onChange={e => setMergeSource(e.target.value)} placeholder="例: Ringo@夏コミ" className="w-full border p-2.5 rounded-lg" />
+              <label className="block text-sm text-gray-600 mb-1">間違ってぁE��名前 (統合�E)</label>
+              <input type="text" value={mergeSource} onChange={e => setMergeSource(e.target.value)} placeholder="侁E Ringo@夏コチE className="w-full border p-2.5 rounded-lg" />
             </div>
-            <div className="text-gray-400 py-3 hidden md:block">➔</div>
+            <div className="text-gray-400 py-3 hidden md:block">➁E/div>
             <div className="flex-1 w-full">
-              <label className="block text-sm text-gray-600 mb-1">正しい名前 (統合先)</label>
-              <input type="text" value={mergeTarget} onChange={e => setMergeTarget(e.target.value)} placeholder="例: りんご" className="w-full border p-2.5 rounded-lg" />
+              <label className="block text-sm text-gray-600 mb-1">正しい名前 (統合�E)</label>
+              <input type="text" value={mergeTarget} onChange={e => setMergeTarget(e.target.value)} placeholder="侁E りんぁE className="w-full border p-2.5 rounded-lg" />
             </div>
             <button 
               onClick={handleMerge} 
               disabled={isMerging}
               className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white font-bold rounded-lg w-full md:w-auto transition-colors"
             >
-              {isMerging ? '統合中...' : '統合を実行'}
+              {isMerging ? '統合中...' : '統合を実衁E}
             </button>
           </div>
-          <p className="text-xs text-gray-500 mt-3">※統合元と同じ名前で登録されている写真が、すべて統合先のレイヤー名に上書きされます。</p>
+          <p className="text-xs text-gray-500 mt-3">※統合�Eと同じ名前で登録されてぁE��写真が、すべて統合�Eのレイヤー名に上書きされます、E/p>
         </div>
 
         <div className="bg-white p-6 rounded-2xl shadow-sm mb-6 flex flex-wrap gap-4 items-center">
           <button onClick={() => setFilterStatus("all")} className={`px-4 py-2 rounded-md font-bold ${filterStatus === "all" ? "bg-gray-800 text-white" : "bg-gray-100"}`}>すべて</button>
           <button onClick={() => setFilterStatus("active")} className={`px-4 py-2 rounded-md font-bold ${filterStatus === "active" ? "bg-green-600 text-white" : "bg-gray-100"}`}>有効 (Active)</button>
           <button onClick={() => setFilterStatus("dead")} className={`px-4 py-2 rounded-md font-bold ${filterStatus === "dead" ? "bg-red-600 text-white" : "bg-gray-100"}`}>死リンク (Dead)</button>
-          <button onClick={fetchItems} className="ml-auto px-4 py-2 bg-blue-100 text-blue-700 rounded-md font-bold">データを更新</button>
+          <button onClick={fetchItems} className="ml-auto px-4 py-2 bg-blue-100 text-blue-700 rounded-md font-bold">チE�Eタを更新</button>
         </div>
 
         {loading ? <p>読み込み中...</p> : (
@@ -166,10 +166,10 @@ export default function AdminPage() {
             <table className="w-full text-left text-sm">
               <thead className="bg-gray-50 text-gray-600">
                 <tr>
-                  <th className="p-4">画像</th>
-                  <th className="p-4">情報</th>
-                  <th className="p-4">ステータス</th>
-                  <th className="p-4">操作</th>
+                  <th className="p-4">画僁E/th>
+                  <th className="p-4">惁E��</th>
+                  <th className="p-4">スチE�Eタス</th>
+                  <th className="p-4">操佁E/th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -190,18 +190,18 @@ export default function AdminPage() {
                         {item.status}
                       </span>
                       <div className="text-gray-400 text-[10px] mt-2">
-                        最終確認:<br/>{item.last_checked_at ? new Date(item.last_checked_at).toLocaleString() : '未確認'}
+                        最終確誁E<br/>{item.last_checked_at ? new Date(item.last_checked_at).toLocaleString() : '未確誁E}
                       </div>
                     </td>
                     <td className="p-4">
                       <div className="flex flex-col gap-2">
-                        <button onClick={() => setEditingItem(item)} className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-xs font-bold text-gray-700">編集</button>
+                        <button onClick={() => setEditingItem(item)} className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-xs font-bold text-gray-700">編雁E/button>
                         {item.status === 'active' ? (
                           <button onClick={() => updateStatus(item.id, 'dead')} className="px-3 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded text-xs font-bold">非表示</button>
                         ) : (
                           <button onClick={() => updateStatus(item.id, 'active')} className="px-3 py-1 bg-green-50 hover:bg-green-100 text-green-600 rounded text-xs font-bold">復活</button>
                         )}
-                        <button onClick={() => deleteItem(item.id)} className="px-3 py-1 text-gray-400 hover:text-red-600 rounded text-xs underline">完全削除</button>
+                        <button onClick={() => deleteItem(item.id)} className="px-3 py-1 text-gray-400 hover:text-red-600 rounded text-xs underline">完�E削除</button>
                       </div>
                     </td>
                   </tr>
@@ -211,18 +211,18 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 編集モーダル */}
+        {/* 編雁E��ーダル */}
         {editingItem && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
-              <h2 className="text-xl font-bold mb-4">データ編集</h2>
+              <h2 className="text-xl font-bold mb-4">チE�Eタ編雁E/h2>
               <form onSubmit={saveEdit} className="flex flex-col gap-4">
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">キャラ名 (元データ)</label>
+                  <label className="block text-sm text-gray-600 mb-1">キャラ吁E(允E��ータ)</label>
                   <input type="text" value={editingItem.member || ''} onChange={e => setEditingItem({...editingItem, member: e.target.value})} className="w-full border p-2 rounded" />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1 font-bold text-blue-600">レイヤー名</label>
+                  <label className="block text-sm text-gray-600 mb-1 font-bold text-blue-600">レイヤー吁E/label>
                   <input type="text" value={editingItem.cosplayer || ''} onChange={e => setEditingItem({...editingItem, cosplayer: e.target.value})} className="w-full border p-2 rounded font-bold" />
                 </div>
                 <div>
@@ -230,13 +230,13 @@ export default function AdminPage() {
                   <input type="text" value={editingItem.unit || ''} onChange={e => setEditingItem({...editingItem, unit: e.target.value})} className="w-full border p-2 rounded" />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">タグ (カンマ区切り)</label>
+                  <label className="block text-sm text-gray-600 mb-1">タグ (カンマ区刁E��)</label>
                   <input type="text" value={typeof editingItem.tags === 'string' ? editingItem.tags : (editingItem.tags?.join(', ') || '')} onChange={e => setEditingItem({...editingItem, tags: e.target.value})} className="w-full border p-2 rounded" />
                 </div>
                 
                 <div className="flex justify-end gap-2 mt-4">
                   <button type="button" onClick={() => setEditingItem(null)} className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg">キャンセル</button>
-                  <button type="submit" className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg">保存</button>
+                  <button type="submit" className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg">保孁E/button>
                 </div>
               </form>
             </div>

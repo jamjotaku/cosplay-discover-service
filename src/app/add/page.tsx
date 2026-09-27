@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import dictionaryData from '@/data/vtuber_dictionary.json';
+import { supabase } from "@/lib/supabase";
 
 export default function AddCosplayPage() {
   const [url, setUrl] = useState("");
@@ -22,6 +22,8 @@ export default function AddCosplayPage() {
   // サジェスト用のレイヤー名リスト
   const [knownCosplayers, setKnownCosplayers] = useState<{cosplayer: string, x_username: string}[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  
+  const [dictionaryData, setDictionaryData] = useState<any[]>([]);
   const [showCharSuggestions, setShowCharSuggestions] = useState(false);
 
   useEffect(() => {
@@ -36,7 +38,16 @@ export default function AddCosplayPage() {
         console.error("サジェストデータの取得に失敗しました", err);
       }
     };
+    const fetchDictionary = async () => {
+      try {
+        const { data } = await supabase.from('vtuber_dictionary').select('*').order('created_at', { ascending: true });
+        if (data) setDictionaryData(data);
+      } catch (err) {
+        console.error("辞書データの取得に失敗しました", err);
+      }
+    };
     fetchCosplayers();
+    fetchDictionary();
   }, []);
 
   const handleAnalyze = async () => {

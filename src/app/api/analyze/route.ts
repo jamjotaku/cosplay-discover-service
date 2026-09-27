@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getTweet } from 'react-tweet/api';
-import dictionaryData from '@/data/vtuber_dictionary.json';
-
-// 文字数が「長い」ものから順にマッチングさせる（例：「兎田ぺこら」→「ぺこら」の順）
-const sortedDictionary = [...dictionaryData].sort((a, b) => b.name.length - a.name.length);
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: Request) {
   try {
@@ -11,14 +8,22 @@ export async function POST(request: Request) {
 
     const tweetIdMatch = url.match(/\/status\/(\d+)/);
     if (!tweetIdMatch) {
-      return NextResponse.json({ error: '無効なX(Twitter)のURLです。' }, { status: 400 });
+      return NextResponse.json({ error: '無効なX(Twitter)のURLです' }, { status: 400 });
     }
     const tweetId = tweetIdMatch[1];
 
     const tweet = await getTweet(tweetId);
     if (!tweet) {
-      return NextResponse.json({ error: 'ツイートの取得に失敗しました。非公開アカウントか削除された可能性があります。' }, { status: 404 });
+      return NextResponse.json({ error: 'ツイートの取得に失敗しました。非公開アカウントか削除された可能性があります' }, { status: 404 });
     }
+
+    // 辞書をデータベースから最新状態で取得
+    const { data: dictData, error: dictError } = await supabase.from('vtuber_dictionary').select('*');
+    if (dictError) throw dictError;
+    const dictionaryData = dictData || [];
+    
+    // 文字数が「長い」ものから順にマッチングさせる
+    const sortedDictionary = [...dictionaryData].sort((a, b) => b.name.length - a.name.length);
 
     const text = tweet.text;
     const images = tweet.photos?.map(p => {
@@ -66,8 +71,19 @@ export async function POST(request: Request) {
         }
       }
       
+      // 3. あだ名（エイリアス）でのマッチング
+      if (!matched && charData.aliases && charData.aliases.length > 0) {
+        for (const alias of charData.aliases) {
+          const normalizedAlias = alias.toLowerCase().replace(/[\s\n_　]/g, "");
+          if (normalizedAlias.length >= 2 && normalizedText.includes(normalizedAlias)) {
+            matched = true;
+            break;
+          }
+        }
+      }
+      
       if (matched) {
-        // すでに部分一致で含まれているキャラ（例：「ペコラ」と「兎田ぺこら」）の重複を防ぐ
+        // すでに部分一致で含まれているキャラ（例：「ぺコラ」と「兎田ぺこら」）の重複を防ぐ
         const isSubset = matchedCharacters.some(existing => existing.name.includes(charData.name));
         if (!isSubset) {
           matchedCharacters.push(charData);
@@ -104,6 +120,6 @@ export async function POST(request: Request) {
 
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: 'サーバーエラーが発生しました。' }, { status: 500 });
+    return NextResponse.json({ error: 'サーバーエラーが発生しました' }, { status: 500 });
   }
 }
