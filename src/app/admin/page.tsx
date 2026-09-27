@@ -21,6 +21,7 @@ export default function AdminPage() {
   useEffect(() => {
     if (checkAdminAuth()) {
       setIsAuthenticated(true);
+      setAdminAuth();
       fetchItems();
     }
   }, []);
@@ -40,6 +41,7 @@ export default function AdminPage() {
     const data = await res.json();
     if (data.success) {
       setIsAuthenticated(true);
+      setAdminAuth();
       fetchItems();
     } else {
       alert("パスワードが違います");
