@@ -349,14 +349,19 @@ export default function CosplayGallery({ fixedCosplayer }: { fixedCosplayer?: st
                   </div>
                 )}
                 
-                <div className="flex items-center gap-2 text-gray-600 mt-4 border-t pt-4">
-                  <span className="text-sm font-medium">Cosplayer:</span>
-                  {fixedCosplayer ? (
-                    <span className="font-bold text-blue-600">{item.cosplayer}</span>
-                  ) : (
-                    <Link href={`/cosplayer/${encodeURIComponent(item.cosplayer)}`} className="font-bold text-blue-600 hover:underline">
-                      {item.cosplayer}
-                    </Link>
+                <div className="flex flex-col gap-0 mt-4 border-t pt-4">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <span className="text-sm font-medium">Cosplayer:</span>
+                    {fixedCosplayer ? (
+                      <span className="font-bold text-blue-600">{item.cosplayer}</span>
+                    ) : (
+                      <Link href={`/cosplayer/${encodeURIComponent(item.cosplayer)}`} className="font-bold text-blue-600 hover:underline">
+                        {item.cosplayer}
+                      </Link>
+                    )}
+                  </div>
+                  {item.x_username && (
+                    <span className="text-xs text-gray-400 font-mono ml-[76px]">@{item.x_username}</span>
                   )}
                 </div>
                 
