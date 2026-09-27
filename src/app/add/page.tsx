@@ -97,6 +97,7 @@ export default function AddCosplayPage() {
         const payload = {
           member: editCharacter,
           cosplayer: editCosplayer,
+          x_username: result.tweet.screenName,
           image: imgUrl,
           link: url,
           unit: editUnit

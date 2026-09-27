@@ -5,7 +5,7 @@ import dictionaryData from '@/data/vtuber_dictionary.json';
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const { member, cosplayer, image, link, unit } = data;
+    const { member, cosplayer, x_username, image, link, unit } = data;
 
     if (!link || !image) {
       return NextResponse.json({ error: '必須項目が不足しています' }, { status: 400 });
@@ -22,6 +22,7 @@ export async function POST(request: Request) {
     const { error } = await supabase.from('cosplay_items').insert({
       member: member || '',
       cosplayer: cosplayer || '',
+      x_username: x_username || '',
       image_url: image,
       tweet_url: link,
       unit: unit || '',
