@@ -27,7 +27,7 @@ async function run() {
   const { data: items, error } = await supabase
     .from('cosplay_items')
     .select('id, tweet_url')
-    .eq('status', 'active')
+    .eq('status', 'alive')
     .order('last_checked_at', { ascending: true, nullsFirst: true })
     .limit(500);
 
